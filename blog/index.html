@@ -89,7 +89,19 @@
       ✍️ Submit Your Letter
     </a>
   </div>
+<div class="form-box">
+  <h2>Write to the Void</h2>
+  <form id="voidForm">
+    <label for="author">Name (or leave blank)</label><br>
+    <input type="text" id="author" name="author" placeholder="A Dreamer"><br><br>
 
+    <label for="letter">Your Letter</label><br>
+    <textarea id="letter" name="letter" rows="6" placeholder="Dear Void..."></textarea><br><br>
+
+    <button type="submit">Send Letter</button>
+    <p id="confirmation" style="color: #c0ffee; display: none;">Letter sent to the void. Echo pending...</p>
+  </form>
+</div>
   <h2>Recent Posts</h2>
   <ul id="blog-list">
     <li>Loading letters...</li>
