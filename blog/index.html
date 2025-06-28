@@ -138,5 +138,25 @@
 
     loadBlogPosts();
   </script>
+  <script>
+  document.getElementById('voidForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('author').value || 'A Dreamer';
+    const letter = document.getElementById('letter').value;
+
+    if (!letter.trim()) {
+      alert("Please write something before sending.");
+      return;
+    }
+
+    // For now, just fake it.
+    document.getElementById('voidForm').reset();
+    document.getElementById('confirmation').style.display = 'block';
+
+    console.log(`New letter from ${name}:\n\n${letter}`);
+    // TO DO: Save this later
+  });
+</script>
 </body>
 </html>
