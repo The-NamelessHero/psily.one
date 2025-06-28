@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Submit a Letter – Psily.one</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    textarea, input {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #1a0f2b;
+      color: white;
+    }
+    form {
+      max-width: 600px;
+      margin: 2rem auto;
+    }
+    button {
+      background-color: #f0b3ff;
+      color: #1e112a;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>✍️ Write to the Void</h1>
+    <p>Let your thoughts drift into the archive of Psily.one</p>
+    <nav>
+      <a href="/">⛵ Home</a> |
+      <a href="/blog/">💌 Blog</a>
+    </nav>
+  </header>
+
+  <form id="letter-form">
+    <label for="title">Title or Alias</label>
+    <input type="text" id="title" placeholder="The Dreamer at 3AM" required>
+
+    <label for="body">Your Letter</label>
+    <textarea id="body" rows="10" placeholder="Dear Void..." required></textarea>
+
+    <button type="submit">Send It</button>
+    <p id="status"></p>
+  </form>
+
+  <script>
+    document.getElementById('letter-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const body = document.getElementById('body').value;
+      const status = document.getElementById('status');
+
+      status.textContent = "Sending...";
+
+      const result = await fetch('https://api.github.com/repos/psily/psily.github.io/issues', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer YOUR_PERSONAL_ACCESS_TOKEN',
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({
+          title: title,
+          body: body
+        })
+      });
+
+      if (result.ok) {
+        status.textContent = "✅ Letter sent!";
+        document.getElementById('letter-form').reset();
+      } else {
+        status.textContent = "❌ Failed to send. Check console.";
+        console.error(await result.text());
+      }
+    });
+  </script>
+</body>
+</html>
