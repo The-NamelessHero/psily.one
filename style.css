@@ -1,1 +1,38 @@
+/* style.css */
+body {
+  font-family: 'Georgia', serif;
+  background-color: #1e112a;
+  color: #f8f8ff;
+  margin: 0;
+  padding: 0 2rem;
+}
 
+header {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #f0b3ff;
+}
+
+nav a {
+  margin: 0 1rem;
+  color: #c0ffee;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+section {
+  margin: 2rem 0;
+}
+
+footer {
+  text-align: center;
+  margin: 4rem 0;
+  color: #888;
+}
