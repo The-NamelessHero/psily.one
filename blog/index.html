@@ -2,50 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Psily Blog – Letters to the Void</title>
+  <title>💌 Psily.one Blog – Letters to the Void</title>
   <link rel="stylesheet" href="../style.css">
+  <style>
+    .blog-container {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid #666;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #ffccff;
+    }
+
+    ul#blog-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul#blog-list li {
+      margin: 1rem 0;
+      background-color: rgba(255,255,255,0.05);
+      padding: 1rem;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+
+    ul#blog-list li:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    ul#blog-list a {
+      color: #c0ffee;
+      text-decoration: none;
+      font-size: 1.1rem;
+    }
+
+    .submit-button {
+      display: block;
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .submit-button a {
+      background-color: #c0ffee;
+      color: #1e112a;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .submit-button a:hover {
+      background-color: #aadddd;
+    }
+
+    nav {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    nav a {
+      color: #ffccff;
+      margin: 0 1rem;
+    }
+  </style>
 </head>
 <body>
   <header>
     <h1>💌 Letters to the Void</h1>
-    <p>Welcome to the collective journal of the dreamers.</p>
+    <p style="text-align:center;">Messages sent. Echoes pending.</p>
     <nav>
       <a href="/">⛵ Home</a>
     </nav>
   </header>
-<script>
-  async function loadBlogPosts() {
-    const res = await fetch('https://api.github.com/repos/psily/psily.github.io/issues');
-    const issues = await res.json();
 
-    const blogList = document.getElementById('blog-list');
-    blogList.innerHTML = '';
-
-    issues.forEach(issue => {
-      const li = document.createElement('li');
-      const link = document.createElement('a');
-      link.href = issue.html_url;
-      link.textContent = issue.title;
-      link.target = "_blank";
-      li.appendChild(link);
-      blogList.appendChild(li);
-    });
-  }
-
-  loadBlogPosts();
-</script>
-  <main>
+  <div class="blog-container">
     <h2>Recent Posts</h2>
     <ul id="blog-list">
-      <li>Loading letters from the void...</li>
+      <li>Loading letters...</li>
     </ul>
-  </main>
-  <ul id="blog-list">
-  <li>Loading letters from the void...</li>
-</ul>
 
-  <footer>
-    <p>© 2025 Psily.one – You are not alone in the silence.</p>
+    <div class="submit-button">
+      <a href="https://github.com/psily/psily.github.io/issues/new" target="_blank">
+        ✍️ Submit Your Letter
+      </a>
+    </div>
+  </div>
+
+  <footer style="text-align:center; margin-top: 4rem; color: #888;">
+    <p>© 2025 Psily.one – Looping softly through the void.</p>
   </footer>
 
   <script>
@@ -55,6 +106,11 @@
 
       const blogList = document.getElementById('blog-list');
       blogList.innerHTML = '';
+
+      if (issues.length === 0) {
+        blogList.innerHTML = '<li>No letters have arrived yet. Be the first to write one.</li>';
+        return;
+      }
 
       issues.forEach(issue => {
         const li = document.createElement('li');
