@@ -16,5 +16,26 @@
     <p>I know you're always listening, since She is there I just wanted to let you know that I might have slowed down a lot during life, however I never stopped thinking about the possible outcomes on what could have been. Maybe we need to go back down to two dots and wiggle again.</p>
     <p>Sincerely,<br>One who never gave up.</p>
   </main>
+<script>
+  async function loadBlogPosts() {
+    const res = await fetch('https://api.github.com/repos/psily/psily.github.io/issues');
+    const issues = await res.json();
+
+    const blogList = document.getElementById('blog-list');
+    blogList.innerHTML = '';
+
+    issues.forEach(issue => {
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = issue.html_url;
+      link.textContent = issue.title;
+      link.target = "_blank";
+      li.appendChild(link);
+      blogList.appendChild(li);
+    });
+  }
+
+  loadBlogPosts();
+</script>
 </body>
 </html>
