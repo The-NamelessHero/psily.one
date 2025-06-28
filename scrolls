@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📜 The Scrolls – Psily.one</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .scroll-container {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border: 1px solid #666;
+    }
+
+    .scroll {
+      margin: 2rem 0;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 4px solid #c0ffee;
+    }
+
+    .scroll h3 {
+      margin-top: 0;
+      color: #f0b3ff;
+    }
+
+    .reaction {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .reaction:hover {
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📜 The Scrolls</h1>
+    <p style="text-align:center;">Read the echoes that found their way back.</p>
+    <nav style="text-align:center;">
+      <a href="/">⛵ Home</a>
+      <a href="/blog/">💌 Write</a>
+    </nav>
+  </header>
+
+  <main class="scroll-container" id="scrolls">
+    <p>Loading scrolls from the void...</p>
+  </main>
+
+  <script>
+    // 🔥 For demo purposes - we'll replace this with live sheet fetch
+    const dummyScrolls = [
+      {
+        author: "A Dreamer",
+        body: "Dear Void,\n\nSometimes I scream into you just to hear my own echo. But lately... I think someone’s listening.\n\nLove,\nA Dreamer"
+      },
+      {
+        author: "Someone Real",
+        body: "I’m scared I forgot how to be human. If anyone else feels this way — you’re not alone."
+      }
+    ];
+
+    function renderScrolls(scrolls) {
+      const container = document.getElementById('scrolls');
+      container.innerHTML = '';
+
+      scrolls.forEach(scroll => {
+        const div = document.createElement('div');
+        div.className = 'scroll';
+
+        const h3 = document.createElement('h3');
+        h3.textContent = `From: ${scroll.author || 'Anonymous'}`;
+        const p = document.createElement('p');
+        p.textContent = scroll.body;
+
+        const react = document.createElement('div');
+        react.className = 'reaction';
+        react.innerHTML = '❤️ Send a ping';
+
+        react.onclick = () => {
+          alert("Ping sent. Someone felt it.");
+        };
+
+        div.appendChild(h3);
+        div.appendChild(p);
+        div.appendChild(react);
+        container.appendChild(div);
+      });
+    }
+
+    renderScrolls(dummyScrolls);
+  </script>
+</body>
+</html>
