@@ -5,62 +5,13 @@
   <title>The Library – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
   <style>
-:root {
-  --parchment-bg: url('https://cdn.pixabay.com/photo/2017/08/30/07/52/parchment-2690585_960_720.jpg');
-  --modal-bg: #fdf5e6;
-  --text-color: #111;
-  --dark-bg: #1a0f1f;
-  --light-bg: #d4d4d4;
-  --font-color: #f8e1ff;
-
-#scrollModal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1000;
-}
-
-#overlay {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backdrop-filter: blur(10px);
-  background: rgba(0, 0, 0, 0.6);
-}
-
-#scrollPopup {
-  position: absolute;
-  top: 5%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  max-width: 700px;
-  max-height: 90vh;
-  background: url('https://i.imgur.com/G8eHfBb.png') no-repeat center center;
-  background-size: cover;
-  padding: 2em;
-  border-radius: 16px;
-  overflow-y: auto;
-  box-shadow: 0 0 20px rgba(0,0,0,0.7);
-  color: #1a0f1f;
-  font-family: 'Georgia', serif;
-}
-
-#closeScroll {
-  position: absolute;
-  top: 10px;
-  right: 20px;
-  font-size: 1.5em;
-  cursor: pointer;
-  color: #333;
-}
-
-#scrollContent {
-  max-height: 80vh;
-  overflow-y: auto;
-  padding-right: 1em;
-}
+    :root {
+      --parchment-bg: url('https://cdn.pixabay.com/photo/2017/08/30/07/52/parchment-2690585_960_720.jpg');
+      --modal-bg: #fdf5e6;
+      --text-color: #111;
+      --dark-bg: #1a0f1f;
+      --light-bg: #d4d4d4;
+      --font-color: #f8e1ff;
     }
 
     body {
@@ -82,15 +33,30 @@
       margin-bottom: 2em;
     }
 
-    nav a {
+    nav a, nav button {
       margin: 0 1em;
       text-decoration: none;
       color: #b892ff;
+      background: none;
+      border: none;
+      font: inherit;
+      cursor: pointer;
     }
 
     .controls {
       text-align: center;
       margin-bottom: 2em;
+    }
+
+    .controls input,
+    .controls select {
+      padding: 0.5em;
+      margin: 0 0.5em;
+      font-size: 1em;
+      border-radius: 6px;
+      border: 1px solid #774da9;
+      background-color: #1e1127;
+      color: #fff3ff;
     }
 
     .scroll {
@@ -101,6 +67,7 @@
       margin-bottom: 1.5em;
       box-shadow: 0 0 10px rgba(255, 200, 255, 0.1);
       cursor: pointer;
+      position: relative;
     }
 
     .scroll .author {
@@ -110,9 +77,25 @@
     }
 
     .scroll .rating {
-      float: right;
+      position: absolute;
+      top: 1em;
+      right: 1em;
       font-size: 0.8em;
       color: #aaa;
+    }
+
+    .scroll .reactions button {
+      margin: 0.2em;
+      padding: 0.4em 0.6em;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .scroll .reactions button:disabled {
+      opacity: 0.4;
+      cursor: default;
     }
 
     .loading {
@@ -122,179 +105,186 @@
       margin-top: 2em;
     }
 
-    .modal {
+    /* Modal for quick popup */
+    #scrollModal {
       display: none;
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.8);
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.8);
       backdrop-filter: blur(6px);
       justify-content: center;
       align-items: center;
       z-index: 1000;
     }
-
-    .modal-content {
-      background: var(--parchment-bg) center/cover no-repeat;
-      color: var(--text-color);
-      padding: 2em;
+    #overlay {
+      position: absolute;
+      width: 100%; height: 100%;
+      background: transparent;
+    }
+    #scrollPopup {
+      position: relative;
       width: 90%;
-      max-width: 600px;
-      border-radius: 12px;
-      border: 3px solid #c4a76f;
+      max-width: 700px;
+      max-height: 90vh;
+      background: url('https://i.imgur.com/G8eHfBb.png') no-repeat center/cover;
+      background-size: cover;
+      padding: 2em;
+      border-radius: 16px;
+      overflow-y: auto;
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      color: #1a0f1f;
       font-family: 'Georgia', serif;
-      animation: scrollIn 0.5s ease-out;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-      background-blend-mode: multiply;
-      background-color: rgba(255, 255, 255, 0.85);
+    }
+    #closeScroll {
+      position: absolute;
+      top: 10px; right: 20px;
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #333;
+    }
+    #scrollContent {
+      max-height: 80vh;
+      overflow-y: auto;
+      padding-right: 1em;
     }
 
+    /* Handheld animation */
     @keyframes scrollIn {
       from { transform: translateY(-30px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
-
-    .reaction-bar {
-      margin-top: 1em;
-      text-align: center;
-    }
-
-    .reaction-bar span {
-      font-size: 1.5em;
-      margin: 0 0.4em;
-      cursor: pointer;
-      transition: transform 0.2s, filter 0.2s;
-      position: relative;
-    }
-
-    .reaction-bar span:hover {
-      transform: scale(1.2);
-      filter: drop-shadow(0 0 6px gold);
-    }
-
-    .reaction-bar span::after {
-      content: attr(data-bonus);
-      font-size: 0.6em;
-      position: absolute;
-      top: -1.2em;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #888;
+    .modal-content {
+      animation: scrollIn 0.5s ease-out;
     }
   </style>
 </head>
 <body>
 
-<audio autoplay loop>
-  <source src="https://cdn.pixabay.com/audio/2022/03/04/audio_14b18bcb15.mp3" type="audio/mpeg">
-  Your browser does not support the audio element.
-</audio>
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/audio/2022/03/04/audio_14b18bcb15.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
 
-<header>
-  <nav>
-    <a class="home-link" href="/">🌀 Home</a>
-    <a href="/scroll/">✍️ Write a Scroll</a>
-    <a href="/tree/">🌳 Tree of Love</a>
-    <button onclick="toggleDarkMode()">🌓</button>
-  </nav>
-  <h1>📚 The Archive of Psily</h1>
-  <p>Where the echoes of the void are preserved.</p>
-</header>
+  <header>
+    <nav>
+      <a class="home-link" href="/">🌀 Home</a>
+      <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/tree/">🌳 Tree of Love</a>
+      <button onclick="toggleDarkMode()">🌓</button>
+    </nav>
+    <h1>📚 The Archive of Psily</h1>
+    <p>Where the echoes of the void are preserved.</p>
+  </header>
 
-<section class="controls">
-  <input type="text" id="search" placeholder="Search scrolls...">
-  <select id="sort">
-    <option value="latest">Latest</option>
-    <option value="rating">Rating</option>
-    <option value="length">Length</option>
-  </select>
-</section>
+  <section class="controls">
+    <input type="text" id="search" placeholder="Search scrolls...">
+    <select id="sort">
+      <option value="latest">Latest</option>
+      <option value="rating">Rating</option>
+      <option value="length">Length</option>
+    </select>
+  </section>
 
-<section id="scrolls">
-  <div class="loading">Echoing through the archives...</div>
-</section>
-  <div id="scrollModal" style="display:none;">
-  <div id="overlay"></div>
-  <div id="scrollPopup">
-    <span id="closeScroll">✖</span>
-    <div id="scrollContent"></div>
+  <section id="scrolls">
+    <div class="loading">Echoing through the archives...</div>
+  </section>
+
+  <!-- Modal Popup -->
+  <div id="scrollModal">
+    <div id="overlay"></div>
+    <div id="scrollPopup">
+      <span id="closeScroll">✖</span>
+      <div id="scrollContent"></div>
+    </div>
   </div>
-</div>
 
-<div class="modal" id="modal">
-  <div class="modal-content" id="modalContent"></div>
-</div>
-
-<script>
-  async function loadScrolls() {
-    try {
-      const res = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll");
-      const data = await res.json();
-      const scrolls = data.scroll || data.scrolls;
-      const container = document.getElementById("scrolls");
-      container.innerHTML = "";
-
-      scrolls.reverse().forEach((entry, index) => {
-        const scrollId = index + 1; // row ID in Sheets
-        const alreadyVoted = localStorage.getItem(`voted-${scrollId}`) === "true";
-
-        const div = document.createElement("div");
-        div.addEventListener("click", () => {
-  document.getElementById("scrollContent").innerHTML = `
-    <div class="rating">★ ${entry.rating || 0}</div>
-    <p>${entry.scroll}</p>
-    <div class="author">– ${entry.author || "Anonymous"}</div>
-  `;
-  document.getElementById("scrollModal").style.display = "block";
-});
-        div.className = "scroll";
-        div.innerHTML = `
-          <div class="rating">★ ${entry.rating || 0}</div>
-          <p>${entry.scroll}</p>
-          <div class="author">– ${entry.author || "Anonymous"}</div>
-          <div class="reactions">
-            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 1)">🥲 +1</button>
-            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 2)">❤️ +2</button>
-            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 3)">⭐ +3</button>
-            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 1)">👍 +1</button>
-            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, -1)">👎 -1</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-
-    } catch (error) {
-      document.getElementById("scrolls").innerHTML = "<div class='loading'>⚠️ The void refused to echo back.</div>";
-      console.error("Failed to load scrolls:", error);
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle('light-mode');
     }
-  }
 
-  async function vote(scrollId, currentRating, weight) {
-    const newRating = currentRating + weight;
-    const response = await fetch(`https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll/${scrollId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        scroll: {
-          rating: newRating
+    async function loadScrolls() {
+      const container = document.getElementById("scrolls");
+      container.innerHTML = "<div class='loading'>Echoing through the archives...</div>";
+
+      try {
+        const res = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll");
+        const data = await res.json();
+        const scrolls = data.scroll || [];
+        container.innerHTML = "";
+
+        if (!scrolls.length) {
+          container.innerHTML = "<div class='loading'>No scrolls have echoed back yet.</div>";
+          return;
         }
-      })
+
+        // reverse for newest-first
+        scrolls.reverse().forEach(entry => {
+          const scrollId = entry.id;  // Sheety record ID
+          const alreadyVoted = localStorage.getItem(`voted-${scrollId}`) === "true";
+
+          const div = document.createElement("div");
+          div.className = "scroll";
+          div.innerHTML = `
+            <div class="rating">★ ${entry.rating || 0}</div>
+            <p>${entry.scroll}</p>
+            <div class="author">– ${entry.author || "Anonymous"}</div>
+            <div class="reactions">
+              <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 1)">🥲 +1</button>
+              <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 2)">❤️ +2</button>
+              <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 3)">⭐ +3</button>
+              <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 1)">👍 +1</button>
+              <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, -1)">👎 -1</button>
+            </div>
+          `;
+
+          // popup on clicking the scroll
+          div.addEventListener("click", () => {
+            document.getElementById("scrollContent").innerHTML = `
+              <div class="rating">★ ${entry.rating || 0}</div>
+              <p>${entry.scroll}</p>
+              <div class="author">– ${entry.author || "Anonymous"}</div>
+            `;
+            document.getElementById("scrollModal").style.display = "flex";
+          });
+
+          container.appendChild(div);
+        });
+
+      } catch (err) {
+        container.innerHTML = "<div class='loading'>⚠️ The void refused to echo back.</div>";
+        console.error("Failed to load scrolls:", err);
+      }
+    }
+
+    async function vote(scrollId, currentRating, delta) {
+      try {
+        const newRating = currentRating + delta;
+        const res = await fetch(`https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll/${scrollId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scroll: { rating: newRating } })
+        });
+
+        if (res.ok) {
+          localStorage.setItem(`voted-${scrollId}`, "true");
+          loadScrolls();
+        } else {
+          alert("⚠️ The void rejected your blessing. Try again later.");
+        }
+      } catch (err) {
+        alert("⚠️ Failed to reach the void. Please retry.");
+      }
+    }
+
+    document.getElementById("closeScroll").addEventListener("click", () => {
+      document.getElementById("scrollModal").style.display = "none";
     });
 
-    if (response.ok) {
-      localStorage.setItem(`voted-${scrollId}`, "true");
-      loadScrolls(); // reload to reflect updated rating
-    } else {
-      alert("The void rejected your blessing. Try again later.");
-    }
-  }
-
-  loadScrolls();
-  document.getElementById("closeScroll").addEventListener("click", () => {
-  document.getElementById("scrollModal").style.display = "none";
-  });
-</script>
+    // initial load
+    loadScrolls();
+  </script>
 
 </body>
 </html>
