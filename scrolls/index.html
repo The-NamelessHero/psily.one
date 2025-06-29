@@ -92,6 +92,8 @@
       <a href="/tree/">🌳 Tree of Love</a>
       <a href="/library/">📚 Archive</a>
     </nav>
+    <label for="title">Scroll Title:</label>
+<input type="text" id="title" name="title" placeholder="A whisper, a warning, a wish..." required>
     <h1>✍️ Write a Scroll</h1>
     <p>Let the void hold your words.</p>
   </header>
@@ -112,34 +114,35 @@
   </section>
 
 <script>
-  document.getElementById("scrollForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    const scroll = document.getElementById("scroll").value;
-    const author = document.getElementById("author").value;
+ document.getElementById("scrollForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const title = document.getElementById("title").value;
+  const scroll = document.getElementById("scroll").value;
+  const author = document.getElementById("author").value;
 
-    const response = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      {
-  "scroll": {
-    "scroll": "...",
-    "author": "...",
-    "rating": 0
-  }
-}
-    });
-
-    if (response.ok) {
-      alert("🌌 Your scroll has entered the void.");
-      this.reset();
-    } else {
-      const errorText = await response.text();
-      alert("⚠️ The void rejected this scroll. Details:\n\n" + errorText);
-    }
+  const response = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      scroll: {
+        title: title,
+        scroll: scroll,
+        author: author,
+        rating: 0
+      }
+    })
   });
-</script>
+
+  if (response.ok) {
+    alert("🌌 Your scroll has entered the void.");
+    this.reset();
+  } else {
+    const errorText = await response.text();
+    alert("⚠️ The void rejected this scroll. Details:\n\n" + errorText);
+  }
+});
 
 </body>
 </html>
