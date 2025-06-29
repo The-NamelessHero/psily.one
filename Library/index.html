@@ -169,50 +169,34 @@
 </div>
 
 <script>
-  function toggleDarkMode() {
-    document.body.classList.toggle("light-mode");
-  }
-
   async function loadScrolls() {
     try {
-      const res = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll?bust=" + Date.now());
-      if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+      const res = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll");
       const data = await res.json();
-      let scrolls = data.scroll;
-
+      const scrolls = data.scroll || data.scrolls;
       const container = document.getElementById("scrolls");
-      const searchInput = document.getElementById("search");
-      const sortSelect = document.getElementById("sort");
+      container.innerHTML = "";
 
-      function renderScrolls() {
-        const term = searchInput.value.toLowerCase();
-        const sort = sortSelect.value;
-        let filtered = scrolls.filter(s => s.scroll.toLowerCase().includes(term) || (s.title || '').toLowerCase().includes(term));
+      scrolls.reverse().forEach((entry, index) => {
+        const scrollId = index + 1; // row ID in Sheets
+        const alreadyVoted = localStorage.getItem(`voted-${scrollId}`) === "true";
 
-        if (sort === "rating") filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        else if (sort === "length") filtered.sort((a, b) => (b.scroll.length || 0) - (a.scroll.length || 0));
-        else filtered.reverse();
-
-        container.innerHTML = "";
-        filtered.forEach(entry => {
-          const div = document.createElement("div");
-          div.className = "scroll";
-          div.setAttribute("data-id", entry.id);
-          div.innerHTML = `
-            <div class="rating" id="rating-${entry.id}">★ ${entry.rating || 0}</div>
-            <strong>${entry.title || "Untitled Scroll"}</strong>
-            <p>${entry.scroll.substring(0, 100)}...</p>
-            <div class="author">– ${entry.author || "Anonymous"}</div>
-          `;
-          div.addEventListener('click', () => showModal(entry));
-          container.appendChild(div);
-        });
-      }
-
-      searchInput.addEventListener('input', renderScrolls);
-      sortSelect.addEventListener('change', renderScrolls);
-
-      renderScrolls();
+        const div = document.createElement("div");
+        div.className = "scroll";
+        div.innerHTML = `
+          <div class="rating">★ ${entry.rating || 0}</div>
+          <p>${entry.scroll}</p>
+          <div class="author">– ${entry.author || "Anonymous"}</div>
+          <div class="reactions">
+            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 1)">🥲 +1</button>
+            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 2)">❤️ +2</button>
+            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 3)">⭐ +3</button>
+            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, 1)">👍 +1</button>
+            <button ${alreadyVoted ? "disabled" : ""} onclick="vote(${scrollId}, ${entry.rating || 0}, -1)">👎 -1</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
 
     } catch (error) {
       document.getElementById("scrolls").innerHTML = "<div class='loading'>⚠️ The void refused to echo back.</div>";
@@ -220,48 +204,31 @@
     }
   }
 
-  function showModal(entry) {
-    const modal = document.getElementById("modal");
-    const content = document.getElementById("modalContent");
-    content.innerHTML = `
-      <h2>${entry.title || "Untitled Scroll"}</h2>
-      <p>${entry.scroll}</p>
-      <div class="author">– ${entry.author || "Anonymous"}</div>
-      <div class="reaction-bar">
-        <span onclick="react('${entry.id}', 1)" data-bonus="+1">😭</span>
-        <span onclick="react('${entry.id}', 2)" data-bonus="+2">❤️</span>
-        <span onclick="react('${entry.id}', 3)" data-bonus="+3">⭐</span>
-        <span onclick="react('${entry.id}', 1)" data-bonus="+1">👍</span>
-        <span onclick="react('${entry.id}', -1)" data-bonus="-1">👎</span>
-      </div>
-      <div style="text-align: center; margin-top: 1em;"><button onclick=\"document.getElementById('modal').style.display='none'\">Close Scroll</button></div>
-    `;
-    modal.style.display = "flex";
-  }
+  async function vote(scrollId, currentRating, weight) {
+    const newRating = currentRating + weight;
+    const response = await fetch(`https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll/${scrollId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        scroll: {
+          rating: newRating
+        }
+      })
+    });
 
-  function react(id, value) {
-    const key = `voted-${id}`;
-    if (localStorage.getItem(key)) {
-      alert("You have already voted on this scroll.");
-      return;
+    if (response.ok) {
+      localStorage.setItem(`voted-${scrollId}`, "true");
+      loadScrolls(); // reload to reflect updated rating
+    } else {
+      alert("The void rejected your blessing. Try again later.");
     }
-    localStorage.setItem(key, "true");
-
-    const ratingElement = document.getElementById(`rating-${id}`);
-    const current = parseInt(ratingElement.innerText.replace(/[^\d-]/g, ''));
-    const updated = current + value;
-    ratingElement.innerText = `★ ${updated}`;
-    ratingElement.style.transition = 'transform 0.3s ease, color 0.3s ease';
-    ratingElement.style.transform = 'scale(1.5)';
-    ratingElement.style.color = 'gold';
-    setTimeout(() => {
-      ratingElement.style.transform = 'scale(1)';
-      ratingElement.style.color = '';
-    }, 500);
   }
 
   loadScrolls();
 </script>
+
 
 </body>
 </html>
