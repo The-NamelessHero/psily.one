@@ -144,17 +144,56 @@
         return;
       }
 
-      fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1", {
+      fetch(sheetyURL, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "Authorization": "Basic a2Vma2F0Ok9uT21hdE9wTzNpQTIyPw==" // your Sheety auth key
+    "Authorization": "Basic a2Vma2F0Ok9uT21hdE9wTzNpQTIyPw=="
   },
   body: JSON.stringify({
     scroll: {
-      scroll_text: "Test scroll from Lufu",
-      tags: "test,lufu",
-      timestamp: new Date().toISOString(),
+      scroll_text: `Dear Void,\n\n${letter}\n\n— ${name}`,
+      tags: tags,
+      timestamp: timestamp,
+      reactions: JSON.stringify({
+        "❤️": 0, "😭": 0, "🔥": 0, "🧠": 0, "🐘": 0
+      })
+    }
+  })
+})
+.then(response => response.json())
+.then(data => {
+  console.log("✅ Success!", data);
+  document.getElementById('voidForm').reset();
+  document.getElementById('confirmation').style.display = 'block';
+})
+.catch(err => console.error("❌ Error:", err));
+    });
+
+    document.getElementById('voidForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById('author').value || 'A Dreamer';
+      const letter = document.getElementById('letter').value;
+      const tags = document.getElementById('tags').value;
+      const timestamp = new Date().toISOString();
+
+      if (!letter.trim()) {
+        alert("Please write something before sending.");
+        return;
+      }
+
+      fetch(sheetyURL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Basic a2Vma2F0Ok9uT21hdE9wTzNpQTIyPw=="
+  },
+  body: JSON.stringify({
+    scroll: {
+      scroll_text: `Dear Void,\n\n${letter}\n\n— ${name}`,
+      tags: tags,
+      timestamp: timestamp,
       reactions: JSON.stringify({
         "❤️": 0, "😭": 0, "🔥": 0, "🧠": 0, "🐘": 0
       })
@@ -196,5 +235,7 @@
     loadBlogPosts();
   </script>
 
+</body>
+</html>
 </body>
 </html>
