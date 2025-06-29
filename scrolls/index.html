@@ -2,19 +2,114 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Write a Scroll</title>
+  <title>Write a Scroll – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #1a0f1f;
+      color: #f8e1ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    header {
+      width: 100%;
+      text-align: center;
+      padding: 1em;
+    }
+
+    nav a {
+      margin: 0 1em;
+      text-decoration: none;
+      color: #b892ff;
+    }
+
+    .scroll-container {
+      background-color: #2d1b3a;
+      border: 2px solid #aa78ff;
+      padding: 2em;
+      width: 90%;
+      max-width: 700px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 200, 255, 0.2);
+    }
+
+    textarea {
+      width: 100%;
+      height: 300px;
+      background-color: #1e1127;
+      color: #fff3ff;
+      border: 1px solid #774da9;
+      border-radius: 8px;
+      padding: 1em;
+      font-size: 1em;
+      resize: vertical;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      margin-top: 1em;
+      padding: 0.5em;
+      font-size: 1em;
+      border-radius: 6px;
+      border: 1px solid #774da9;
+      background-color: #1e1127;
+      color: #fff3ff;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5em;
+    }
+
+    button, .home-link {
+      padding: 0.6em 1.2em;
+      font-size: 1em;
+      background-color: #774da9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    button:hover, .home-link:hover {
+      background-color: #a077ff;
+    }
+  </style>
 </head>
 <body>
+
   <header>
+    <nav>
+      <a class="home-link" href="/">🌀 Home</a>
+      <a href="/tree/">🌳 Family Tree</a>
+      <a href="/library/">📚 Library</a>
+    </nav>
     <h1>✍️ Write a Scroll</h1>
-    <p>Let the void receive your words.</p>
+    <p>Let the void hold your words.</p>
   </header>
-  <main>
-    <p>Coming soon: a way to submit your letter to the Archive.</p>
-  </main>
-  <footer>
-    <p><a href="/">← Back to Psily.one</a></p>
-  </footer>
+
+  <section class="scroll-container">
+    <form>
+      <label for="scroll">Your Letter:</label>
+      <textarea id="scroll" name="scroll" placeholder="Speak your truth to the void..."></textarea>
+
+      <label for="author">Name or Alias:</label>
+      <input type="text" id="author" name="author" placeholder="You can stay anonymous">
+
+      <div class="button-group">
+        <button type="submit">Submit Scroll</button>
+        <a class="home-link" href="/">🌀 Back to Home</a>
+      </div>
+    </form>
+  </section>
+
 </body>
 </html>
