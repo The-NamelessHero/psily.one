@@ -5,12 +5,27 @@
   <title>The Library – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
   <style>
+    :root {
+      --parchment-bg: url('https://i.imgur.com/4YGrd3G.jpg');
+      --modal-bg: #fdf5e6;
+      --text-color: #111;
+      --dark-bg: #1a0f1f;
+      --light-bg: #fdf5e6;
+      --font-color: #f8e1ff;
+    }
+
     body {
       font-family: 'Georgia', serif;
-      background-color: #1a0f1f;
-      color: #f8e1ff;
+      background-color: var(--dark-bg);
+      color: var(--font-color);
       margin: 0;
       padding: 1em;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light-mode {
+      background-color: var(--light-bg);
+      color: #222;
     }
 
     header {
@@ -70,8 +85,8 @@
     }
 
     .modal-content {
-      background-color: #fdf5e6;
-      color: #111;
+      background: var(--parchment-bg) center/cover no-repeat;
+      color: var(--text-color);
       padding: 2em;
       width: 90%;
       max-width: 600px;
@@ -80,11 +95,29 @@
       font-family: 'Georgia', serif;
       animation: scrollIn 0.5s ease-out;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      background-blend-mode: multiply;
+      background-color: rgba(255, 255, 255, 0.85);
     }
 
     @keyframes scrollIn {
       from { transform: translateY(-30px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
+    }
+
+    .reaction-bar {
+      margin-top: 1em;
+      text-align: center;
+    }
+
+    .reaction-bar span {
+      font-size: 1.5em;
+      margin: 0 0.4em;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .reaction-bar span:hover {
+      transform: scale(1.2);
     }
   </style>
 </head>
@@ -100,6 +133,7 @@
     <a class="home-link" href="/">🌀 Home</a>
     <a href="/scroll/">✍️ Write a Scroll</a>
     <a href="/tree/">🌳 Tree of Love</a>
+    <button onclick="toggleDarkMode()">🌓</button>
   </nav>
   <h1>📚 The Archive of Psily</h1>
   <p>Where the echoes of the void are preserved.</p>
@@ -123,6 +157,10 @@
 </div>
 
 <script>
+  function toggleDarkMode() {
+    document.body.classList.toggle("light-mode");
+  }
+
   async function loadScrolls() {
     try {
       const res = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll?bust=" + Date.now());
@@ -176,9 +214,27 @@
       <h2>${entry.title || "Untitled Scroll"}</h2>
       <p>${entry.scroll}</p>
       <div class="author">– ${entry.author || "Anonymous"}</div>
-      <button onclick=\"document.getElementById('modal').style.display='none'\">Close</button>
+      <div class="reaction-bar">
+        <span onclick="react('${entry.id}', 1)">😭</span>
+        <span onclick="react('${entry.id}', 2)">❤️</span>
+        <span onclick="react('${entry.id}', 3)">⭐</span>
+        <span onclick="react('${entry.id}', 1)">👍</span>
+        <span onclick="react('${entry.id}', -1)">👎</span>
+      </div>
+      <div style="text-align: center; margin-top: 1em;"><button onclick=\"document.getElementById('modal').style.display='none'\">Close Scroll</button></div>
     `;
     modal.style.display = "flex";
+  }
+
+  function react(id, value) {
+    const key = `voted-${id}`;
+    if (localStorage.getItem(key)) {
+      alert("You have already voted on this scroll.");
+      return;
+    }
+    localStorage.setItem(key, "true");
+    alert("Thanks for your reaction. (Voting will be fully functional soon!)");
+    // In a real setup, this would update the Sheety API rating via PATCH
   }
 
   loadScrolls();
