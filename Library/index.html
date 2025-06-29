@@ -70,18 +70,30 @@
     }
 
     .modal-content {
-      background: url('parchment-texture.jpg') center/cover no-repeat;
+      background-color: #fdf5e6;
+      color: #111;
       padding: 2em;
       width: 90%;
       max-width: 600px;
       border-radius: 12px;
-      border: 3px solid #a58b6f;
-      color: #3e2a16;
+      border: 3px solid #c4a76f;
       font-family: 'Georgia', serif;
+      animation: scrollIn 0.5s ease-out;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    }
+
+    @keyframes scrollIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 </head>
 <body>
+
+<audio autoplay loop>
+  <source src="https://cdn.pixabay.com/audio/2022/03/04/audio_14b18bcb15.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
 
 <header>
   <nav>
@@ -164,7 +176,7 @@
       <h2>${entry.title || "Untitled Scroll"}</h2>
       <p>${entry.scroll}</p>
       <div class="author">– ${entry.author || "Anonymous"}</div>
-      <button onclick="document.getElementById('modal').style.display='none'">Close</button>
+      <button onclick=\"document.getElementById('modal').style.display='none'\">Close</button>
     `;
     modal.style.display = "flex";
   }
