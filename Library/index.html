@@ -10,7 +10,7 @@
       --modal-bg: #fdf5e6;
       --text-color: #111;
       --dark-bg: #1a0f1f;
-      --light-bg: #fdf5e6;
+      --light-bg: #f7efe1;
       --font-color: #f8e1ff;
     }
 
@@ -25,7 +25,7 @@
 
     body.light-mode {
       background-color: var(--light-bg);
-      color: #222;
+      color: #1a0f1f;
     }
 
     header {
@@ -113,11 +113,12 @@
       font-size: 1.5em;
       margin: 0 0.4em;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: transform 0.2s, filter 0.2s;
     }
 
     .reaction-bar span:hover {
       transform: scale(1.2);
+      filter: drop-shadow(0 0 6px gold);
     }
   </style>
 </head>
@@ -185,8 +186,9 @@
         filtered.forEach(entry => {
           const div = document.createElement("div");
           div.className = "scroll";
+          div.setAttribute("data-id", entry.id);
           div.innerHTML = `
-            <div class="rating">★ ${entry.rating || 0}</div>
+            <div class="rating" id="rating-${entry.id}">★ ${entry.rating || 0}</div>
             <strong>${entry.title || "Untitled Scroll"}</strong>
             <p>${entry.scroll.substring(0, 100)}...</p>
             <div class="author">– ${entry.author || "Anonymous"}</div>
@@ -233,8 +235,18 @@
       return;
     }
     localStorage.setItem(key, "true");
-    alert("Thanks for your reaction. (Voting will be fully functional soon!)");
-    // In a real setup, this would update the Sheety API rating via PATCH
+
+    const ratingElement = document.getElementById(`rating-${id}`);
+    const current = parseInt(ratingElement.innerText.replace(/[^\d-]/g, ''));
+    const updated = current + value;
+    ratingElement.innerText = `★ ${updated}`;
+    ratingElement.style.transition = 'transform 0.3s ease, color 0.3s ease';
+    ratingElement.style.transform = 'scale(1.5)';
+    ratingElement.style.color = 'gold';
+    setTimeout(() => {
+      ratingElement.style.transform = 'scale(1)';
+      ratingElement.style.color = '';
+    }, 500);
   }
 
   loadScrolls();
