@@ -6,11 +6,11 @@
   <link rel="stylesheet" href="../style.css">
   <style>
     :root {
-      --parchment-bg: url('https://i.imgur.com/4YGrd3G.jpg');
+      --parchment-bg: url('https://cdn.pixabay.com/photo/2017/08/30/07/52/parchment-2690585_960_720.jpg');
       --modal-bg: #fdf5e6;
       --text-color: #111;
       --dark-bg: #1a0f1f;
-      --light-bg: #f7efe1;
+      --light-bg: #d4d4d4;
       --font-color: #f8e1ff;
     }
 
@@ -114,11 +114,22 @@
       margin: 0 0.4em;
       cursor: pointer;
       transition: transform 0.2s, filter 0.2s;
+      position: relative;
     }
 
     .reaction-bar span:hover {
       transform: scale(1.2);
       filter: drop-shadow(0 0 6px gold);
+    }
+
+    .reaction-bar span::after {
+      content: attr(data-bonus);
+      font-size: 0.6em;
+      position: absolute;
+      top: -1.2em;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #888;
     }
   </style>
 </head>
@@ -217,11 +228,11 @@
       <p>${entry.scroll}</p>
       <div class="author">– ${entry.author || "Anonymous"}</div>
       <div class="reaction-bar">
-        <span onclick="react('${entry.id}', 1)">😭</span>
-        <span onclick="react('${entry.id}', 2)">❤️</span>
-        <span onclick="react('${entry.id}', 3)">⭐</span>
-        <span onclick="react('${entry.id}', 1)">👍</span>
-        <span onclick="react('${entry.id}', -1)">👎</span>
+        <span onclick="react('${entry.id}', 1)" data-bonus="+1">😭</span>
+        <span onclick="react('${entry.id}', 2)" data-bonus="+2">❤️</span>
+        <span onclick="react('${entry.id}', 3)" data-bonus="+3">⭐</span>
+        <span onclick="react('${entry.id}', 1)" data-bonus="+1">👍</span>
+        <span onclick="react('${entry.id}', -1)" data-bonus="-1">👎</span>
       </div>
       <div style="text-align: center; margin-top: 1em;"><button onclick=\"document.getElementById('modal').style.display='none'\">Close Scroll</button></div>
     `;
