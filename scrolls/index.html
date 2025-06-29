@@ -122,13 +122,13 @@
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        scroll: {
-          scroll: scroll,
-          author: author,
-          rating: 0
-        }
-      })
+      {
+  "scroll": {
+    "scroll": "...",
+    "author": "...",
+    "rating": 0
+  }
+}
     });
 
     if (response.ok) {
