@@ -58,7 +58,7 @@
   <header>
     <nav>
       <a class="home-link" href="/">🌀 Home</a>
-      <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/scroll/">✍️ Write a Scroll</a>
       <a href="/tree/">🌳 Family Tree</a>
     </nav>
     <h1>📚 The Library of Psily</h1>
@@ -75,7 +75,7 @@
         const res = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll");
         const data = await res.json();
         const scrolls = data.scroll;
-        const container = document.getElementById("scrolls");
+        const container = document.getElementById("scroll");
 
         if (!scrolls || scrolls.length === 0) {
           container.innerHTML = "<div class='loading'>No scrolls have echoed back yet.</div>";
