@@ -2,19 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Library</title>
+  <title>The Library – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #1a0f1f;
+      color: #f8e1ff;
+      margin: 0;
+      padding: 1em;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2em;
+    }
+
+    nav a {
+      margin: 0 1em;
+      text-decoration: none;
+      color: #b892ff;
+    }
+
+    .scroll {
+      background-color: #2d1b3a;
+      border: 2px solid #774da9;
+      border-radius: 10px;
+      padding: 1.5em;
+      margin-bottom: 1.5em;
+      box-shadow: 0 0 10px rgba(255, 200, 255, 0.1);
+    }
+
+    .scroll .author {
+      margin-top: 1em;
+      font-size: 0.9em;
+      color: #cfaaff;
+    }
+
+    .scroll .rating {
+      float: right;
+      font-size: 0.8em;
+      color: #aaa;
+    }
+
+    .loading {
+      text-align: center;
+      color: #bbb;
+      font-style: italic;
+      margin-top: 2em;
+    }
+  </style>
 </head>
 <body>
+
   <header>
-    <h1>📚 Library of lost scrolls</h1>
-    <p>Archive of Scrolls</p>
+    <nav>
+      <a class="home-link" href="/">🌀 Home</a>
+      <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/tree/">🌳 Family Tree</a>
+    </nav>
+    <h1>📚 The Library of Psily</h1>
+    <p>Where the echoes of the void are preserved.</p>
   </header>
-  <main>
-    <p>Node network in process.</p>
-  </main>
-  <footer>
-    <p><a href="/">← Back to Psily.one</a></p>
-  </footer>
+
+  <section id="scrolls">
+    <div class="loading">Echoing through the archives...</div>
+  </section>
+
+  <script>
+    async function loadScrolls() {
+      const res = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet2");
+      const data = await res.json();
+      const scrolls = data.sheet2;
+      const container = document.getElementById("scrolls");
+
+      if (!scrolls || scrolls.length === 0) {
+        container.innerHTML = "<div class='loading'>No scrolls have echoed back yet.</div>";
+        return;
+      }
+
+      container.innerHTML = ""; // Clear loading state
+
+      scrolls.reverse().forEach(entry => {
+        const div = document.createElement("div");
+        div.className = "scroll";
+        div.innerHTML = `
+          <div class="rating">★ ${entry.rating ?? 0}</div>
+          <p>${entry.scroll}</p>
+          <div class="author">– ${entry.author || "Anonymous"}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    loadScrolls();
+  </script>
+
 </body>
 </html>
