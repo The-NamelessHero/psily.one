@@ -201,12 +201,12 @@
   })
 })
 .then(response => response.json())
-.then(data => console.log("✅ Success!", data))
-.catch(err => console.error("❌ Error:", err))
 .then(data => {
+  console.log("✅ Success!", data);
   document.getElementById('voidForm').reset();
   document.getElementById('confirmation').style.display = 'block';
-});
+})
+.catch(err => console.error("❌ Error:", err));
     });
 
     async function loadBlogPosts() {
@@ -235,7 +235,5 @@
     loadBlogPosts();
   </script>
 
-</body>
-</html>
 </body>
 </html>
