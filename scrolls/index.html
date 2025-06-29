@@ -92,14 +92,14 @@
       <a href="/tree/">🌳 Tree of Love</a>
       <a href="/library/">📚 Archive</a>
     </nav>
-    <label for="title">Scroll Title:</label>
-<input type="text" id="title" name="title" placeholder="A whisper, a warning, a wish..." required>
     <h1>✍️ Write a Scroll</h1>
     <p>Let the void hold your words.</p>
   </header>
 
   <section class="scroll-container">
     <form id="scrollForm">
+      <label for="title">Scroll Title:</label>
+<input type="text" id="title" name="title" placeholder="A whisper, a warning, a wish..." required>
       <label for="scroll">Your Letter:</label>
       <textarea id="scroll" name="scroll" placeholder="Speak your truth to the void..." required></textarea>
 
@@ -143,6 +143,6 @@
     alert("⚠️ The void rejected this scroll. Details:\n\n" + errorText);
   }
 });
-
+</script>
 </body>
 </html>
