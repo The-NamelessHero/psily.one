@@ -78,6 +78,7 @@
     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
     const data = await res.json();
     console.log("DEBUG JSON:", data); // <== Check console
+    
     const scroll = data.scroll;
 
     const container = document.getElementById("scrolls");
