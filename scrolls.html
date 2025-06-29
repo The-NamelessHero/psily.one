@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Psily Scrolls</title>
+  <style>
+    body {
+      background: #1a0d1f;
+      color: #fdf6f9;
+      font-family: 'Georgia', serif;
+      padding: 2em;
+      text-align: center;
+    }
+
+    input, textarea {
+      width: 100%;
+      max-width: 500px;
+      margin: 0.5em auto;
+      display: block;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1em;
+    }
+
+    button {
+      background: #c0ffee;
+      color: #1a0d1f;
+      font-weight: bold;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #confirmation {
+      margin-top: 1em;
+      color: #aaffcc;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Write a Scroll to the Void</h1>
+
+  <form id="scrollForm">
+    <input type="text" id="author" placeholder="Your Name (optional)">
+    <textarea id="letter" rows="6" placeholder="Dear Void..."></textarea>
+    <input type="text" id="tags" placeholder="Tags (comma separated)">
+    <button type="submit">Send</button>
+    <div id="confirmation">✅ Scroll received. Echo pending...</div>
+  </form>
+
+  <script>
+    const sheetyURL = "https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1";
+
+    document.getElementById('scrollForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('author').value || 'A Dreamer';
+      const letter = document.getElementById('letter').value;
+      const tags = document.getElementById('tags').value;
+      const timestamp = new Date().toISOString();
+
+      if (!letter.trim()) {
+        alert("Please write something first.");
+        return;
+      }
+
+      const payload = {
+        sheet1: {
+          scrollText: `Dear Void,\n\n${letter}\n\n— ${name}`,
+          name: name,
+          tags: tags,
+          timestamp: timestamp
+        }
+      };
+
+      try {
+        const response = await fetch(sheetyURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Basic a2Vma2F0Ok9uT21hdE9wTzNpQTIyPw=="
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        console.log("✅ Scroll logged:", result);
+        document.getElementById('scrollForm').reset();
+        document.getElementById('confirmation').style.display = 'block';
+      } catch (error) {
+        console.error("❌ Error:", error);
+        alert("Something went wrong submitting your scroll.");
+      }
+    });
+  </script>
+
+</body>
+</html>
