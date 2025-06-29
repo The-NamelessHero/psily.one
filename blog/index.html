@@ -2,22 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>💌 Psily.one Blog – Letters to the Void</title>
+  <title>💌 Psily.one – Letters to the Void</title>
   <link rel="stylesheet" href="../style.css">
   <style>
-    .blog-container {
-      max-width: 800px;
-      margin: 3rem auto;
-      padding: 2rem;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      border: 1px solid #666;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+    body {
+      background-color: #1a0d1f;
+      color: #fdf6f9;
+      font-family: 'Georgia', serif;
+      margin: 0;
+      padding: 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    h1, h2 {
-      text-align: center;
-      color: #ffccff;
+    h1 {
+      color: #ffcdfd;
+      font-size: 2.8em;
+    }
+
+    nav {
+      margin-bottom: 2rem;
+    }
+
+    nav a {
+      color: #d9baff;
+      text-decoration: none;
+      margin: 0 1rem;
+    }
+
+    .blog-container {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
+    }
+
+    .form-box {
+      margin-bottom: 3rem;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1em;
+    }
+
+    button {
+      background-color: #c0ffee;
+      color: #1e112a;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #aadddd;
+    }
+
+    #confirmation {
+      color: #c0ffee;
+      display: none;
+      margin-top: 1rem;
     }
 
     ul#blog-list {
@@ -30,11 +84,6 @@
       background-color: rgba(255,255,255,0.05);
       padding: 1rem;
       border-radius: 8px;
-      transition: background-color 0.3s;
-    }
-
-    ul#blog-list li:hover {
-      background-color: rgba(255,255,255,0.1);
     }
 
     ul#blog-list a {
@@ -43,76 +92,77 @@
       font-size: 1.1rem;
     }
 
-    .submit-button {
-      display: block;
+    footer {
       text-align: center;
-      margin: 2rem 0;
-    }
-
-    .submit-button a {
-      background-color: #c0ffee;
-      color: #1e112a;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    .submit-button a:hover {
-      background-color: #aadddd;
-    }
-
-    nav {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    nav a {
-      color: #ffccff;
-      margin: 0 1rem;
+      margin-top: 4rem;
+      color: #888;
     }
   </style>
 </head>
 <body>
-  <header>
- 
-    <h1>💌 Letters to the Void</h1>
-    <p style="text-align:center;">Messages sent. Echoes pending.</p>
-    <nav>
-      <a href="/">⛵ Home</a>
-    </nav>
-  </header>
 
-     <div class="blog-container">
-  <div class="submit-button">
-    <a href="https://github.com/psily/psily.github.io/issues/new?title=Letter+to+the+Void&body=Dear+Void%2C%0A%0A[write+your+letter+here]%0A%0AWith+love%2C%0A[a+dreamer]" target="_blank">
-      ✍️ Submit Your Letter
-    </a>
+  <h1>💌 Letters to the Void</h1>
+  <p>Messages sent. Echoes pending.</p>
+  <nav><a href="/">⛵ Home</a></nav>
+
+  <div class="blog-container">
+
+    <div class="form-box">
+      <h2>Write to the Void</h2>
+      <form id="voidForm">
+        <input type="text" id="author" placeholder="Name (or leave blank)">
+        <textarea id="letter" rows="6" placeholder="Dear Void..."></textarea>
+        <input type="text" id="tags" placeholder="Tags (comma separated)">
+        <button type="submit">Send Letter</button>
+        <p id="confirmation">Letter sent to the void. Echo pending...</p>
+      </form>
+    </div>
+
+    <h2>Recent Posts</h2>
+    <ul id="blog-list">
+      <li>Loading letters...</li>
+    </ul>
   </div>
-<div class="form-box">
-  <h2>Write to the Void</h2>
-  <form id="voidForm">
-    <label for="author">Name (or leave blank)</label><br>
-    <input type="text" id="author" name="author" placeholder="A Dreamer"><br><br>
 
-    <label for="letter">Your Letter</label><br>
-    <textarea id="letter" name="letter" rows="6" placeholder="Dear Void..."></textarea><br><br>
-
-    <button type="submit">Send Letter</button>
-    <p id="confirmation" style="color: #c0ffee; display: none;">Letter sent to the void. Echo pending...</p>
-  </form>
-</div>
-  <h2>Recent Posts</h2>
-  <ul id="blog-list">
-    <li>Loading letters...</li>
-  </ul>
-</div>
-
-  <footer style="text-align:center; margin-top: 4rem; color: #888;">
-    <p>© 2025 Psily.one – Looping softly through the void.</p>
+  <footer>
+    © 2025 Psily.one – Looping softly through the void.
   </footer>
 
   <script>
+    const sheetyURL = "https://api.sheety.co/YOUR_PATH_HERE/psilyScrolls/scrolls";
+
+    document.getElementById('voidForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById('author').value || 'A Dreamer';
+      const letter = document.getElementById('letter').value;
+      const tags = document.getElementById('tags').value;
+      const timestamp = new Date().toISOString();
+
+      if (!letter.trim()) {
+        alert("Please write something before sending.");
+        return;
+      }
+
+      fetch(sheetyURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scroll: {
+            scroll_text: `Dear Void,\n\n${letter}\n\n— ${name}`,
+            tags: tags,
+            timestamp: timestamp,
+            reactions: JSON.stringify({ "❤️": 0, "😭": 0, "🔥": 0, "🧠": 0, "🐘": 0 })
+          }
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('voidForm').reset();
+        document.getElementById('confirmation').style.display = 'block';
+      });
+    });
+
     async function loadBlogPosts() {
       const res = await fetch('https://api.github.com/repos/psily/psily.github.io/issues');
       const issues = await res.json();
@@ -138,25 +188,6 @@
 
     loadBlogPosts();
   </script>
-  <script>
-  document.getElementById('voidForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    
-    const name = document.getElementById('author').value || 'A Dreamer';
-    const letter = document.getElementById('letter').value;
 
-    if (!letter.trim()) {
-      alert("Please write something before sending.");
-      return;
-    }
-
-    // For now, just fake it.
-    document.getElementById('voidForm').reset();
-    document.getElementById('confirmation').style.display = 'block';
-
-    console.log(`New letter from ${name}:\n\n${letter}`);
-    // TO DO: Save this later
-  });
-</script>
 </body>
 </html>
