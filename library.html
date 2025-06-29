@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Library – Psily Scrolls</title>
+  <style>
+    body {
+      background: radial-gradient(ellipse at top, #1c0c22 0%, #0e0616 100%);
+      color: #fdf6f9;
+      font-family: 'Georgia', serif;
+      margin: 0;
+      padding: 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #ffcdfd;
+      font-size: 3em;
+      margin-bottom: 0.5em;
+    }
+
+    #scrolls-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      max-width: 1200px;
+      justify-content: center;
+    }
+
+    .scroll-card {
+      background: #f8f2e0 url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+      border: 2px solid #d4c4a5;
+      border-radius: 14px;
+      box-shadow: 0 0 20px rgba(255, 218, 255, 0.2);
+      padding: 20px;
+      width: 300px;
+      color: #2d1f0f;
+      position: relative;
+    }
+
+    .scroll-card .timestamp {
+      font-size: 0.8em;
+      color: #655;
+      margin-top: 0.5em;
+    }
+
+    .scroll-card .tags {
+      font-size: 0.85em;
+      margin-top: 1em;
+      font-style: italic;
+      color: #704b20;
+    }
+
+    .reactions {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 15px;
+      font-size: 1.4em;
+      cursor: pointer;
+    }
+
+    .reaction-count {
+      font-size: 0.85em;
+      display: block;
+      text-align: center;
+      margin-top: 2px;
+      color: #4a2a0c;
+    }
+
+    .filter-box {
+      margin-bottom: 2em;
+      padding: 0.5em;
+      font-size: 1em;
+      border-radius: 6px;
+      border: none;
+      width: 300px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📚 The Scroll Library</h1>
+  <input type="text" id="filterInput" class="filter-box" placeholder="Filter by tag...">
+
+  <div id="scrolls-container"></div>
+
+  <script>
+    const API_URL = "https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1"; // replace this
+
+    let allScrolls = [];
+
+    function renderScrolls(scrolls) {
+      const container = document.getElementById("scrolls-container");
+      container.innerHTML = '';
+
+      scrolls.forEach(scroll => {
+        const reactions = JSON.parse(scroll.reactions || '{}');
+
+        const card = document.createElement("div");
+        card.className = "scroll-card";
+
+        card.innerHTML = `
+          <p>${scroll.scrollText}</p>
+          <div class="tags">Tags: ${scroll.tags || 'none'}</div>
+          <div class="timestamp">${new Date(scroll.timestamp).toLocaleString()}</div>
+          <div class="reactions" data-id="${scroll.id}">
+            ${renderReaction("❤️", reactions["❤️"])}
+            ${renderReaction("😭", reactions["😭"])}
+            ${renderReaction("🔥", reactions["🔥"])}
+            ${renderReaction("🧠", reactions["🧠"])}
+            ${renderReaction("🐘", reactions["🐘"])}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.querySelectorAll(".reactions span").forEach(span => {
+        span.addEventListener("click", () => {
+          const id = span.closest(".reactions").dataset.id;
+          const emoji = span.dataset.reaction;
+          updateReaction(id, emoji);
+        });
+      });
+    }
+
+    function renderReaction(emoji, count = 0) {
+      return `<span data-reaction="${emoji}">${emoji}<div class="reaction-count">${count}</div></span>`;
+    }
+
+    function updateReaction(id, emoji) {
+      const scroll = allScrolls.find(s => s.id == id);
+      const reactions = JSON.parse(scroll.reactions || '{}');
+      reactions[emoji] = (reactions[emoji] || 0) + 1;
+
+      fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scroll: { reactions: JSON.stringify(reactions) } })
+      }).then(() => fetchScrolls());
+    }
+
+    function fetchScrolls() {
+      fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+          allScrolls = data.scrolls.reverse();
+          renderScrolls(allScrolls);
+        });
+    }
+
+    document.getElementById("filterInput").addEventListener("input", (e) => {
+      const val = e.target.value.toLowerCase();
+      const filtered = allScrolls.filter(s => (s.tags || "").toLowerCase().includes(val));
+      renderScrolls(filtered);
+    });
+
+    fetchScrolls();
+  </script>
+</body>
+</html>
