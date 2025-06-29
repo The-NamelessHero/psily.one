@@ -111,34 +111,35 @@
     </form>
   </section>
 
-  <script>
-    document.getElementById("scrollForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const scroll = document.getElementById("scroll").value;
-      const author = document.getElementById("author").value;
+ <script>
+  document.getElementById("scrollForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const scroll = document.getElementById("scroll").value;
+    const author = document.getElementById("author").value;
 
-      const response = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          sheet1: {
-            Scroll: scroll,
-            Author: author,
-            Rating: 0
-          }
-        })
-      });
-
-      if (response.ok) {
-        alert("🌌 Your scroll has entered the void.");
-        this.reset();
-      } else {
-        alert("⚠️ Something went wrong. The void is restless.");
-      }
+    const response = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        sheet1: {
+          scroll: scroll,
+          author: author,
+          rating: 0
+        }
+      })
     });
-  </script>
+
+    if (response.ok) {
+      alert("🌌 Your scroll has entered the void.");
+      this.reset();
+    } else {
+      const errorText = await response.text();
+      alert("⚠️ The void rejected this scroll. Details:\n\n" + errorText);
+    }
+  });
+</script>
 
 </body>
 </html>
