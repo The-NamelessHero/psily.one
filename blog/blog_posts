@@ -67,7 +67,7 @@
   </div>
 
   <script>
-    const sheetyURL = 'https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1';
+    const sheetyURL = 'const sheetyURL = "https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1';
 
     async function loadScrolls() {
       try {
