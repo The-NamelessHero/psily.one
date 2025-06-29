@@ -1,6 +1,5 @@
 const API_URL = 'https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1';
 
-// POST: Submit scroll
 document.getElementById('submitScroll').addEventListener('click', async () => {
   const scrollText = document.getElementById('scrollText').value.trim();
   const scrollName = document.getElementById('scrollName').value.trim();
@@ -25,10 +24,9 @@ document.getElementById('submitScroll').addEventListener('click', async () => {
 
   document.getElementById('scrollText').value = '';
   document.getElementById('scrollName').value = '';
-  loadScrolls(); // Reload after submit
+  loadScrolls();
 });
 
-// GET: Load scrolls
 async function loadScrolls() {
   const res = await fetch(API_URL);
   const data = await res.json();
