@@ -24,6 +24,11 @@
       color: #b892ff;
     }
 
+    .controls {
+      text-align: center;
+      margin-bottom: 2em;
+    }
+
     .scroll {
       background-color: #2d1b3a;
       border: 2px solid #774da9;
@@ -31,6 +36,7 @@
       padding: 1.5em;
       margin-bottom: 1.5em;
       box-shadow: 0 0 10px rgba(255, 200, 255, 0.1);
+      cursor: pointer;
     }
 
     .scroll .author {
@@ -51,81 +57,116 @@
       font-style: italic;
       margin-top: 2em;
     }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(6px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: url('parchment-texture.jpg') center/cover no-repeat;
+      padding: 2em;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 12px;
+      border: 3px solid #a58b6f;
+      color: #3e2a16;
+      font-family: 'Georgia', serif;
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <nav>
-      <a class="home-link" href="/">🌀 Home</a>
-      <a href="/scroll/">✍️ Write a Scroll</a>
-      <a href="/tree/">🌳 Tree of Love</a>
-    </nav>
-    <h1>📚 The Archive of Psily</h1>
-    <p>Where the echoes of the void are preserved.</p>
-  </header>
+<header>
+  <nav>
+    <a class="home-link" href="/">🌀 Home</a>
+    <a href="/scroll/">✍️ Write a Scroll</a>
+    <a href="/tree/">🌳 Tree of Love</a>
+  </nav>
+  <h1>📚 The Archive of Psily</h1>
+  <p>Where the echoes of the void are preserved.</p>
+</header>
 
-  <section id="scrolls">
-    <div class="loading">Echoing through the archives...</div>
-  </section>
+<section class="controls">
+  <input type="text" id="search" placeholder="Search scrolls...">
+  <select id="sort">
+    <option value="latest">Latest</option>
+    <option value="rating">Rating</option>
+    <option value="length">Length</option>
+  </select>
+</section>
 
- <script>
+<section id="scrolls">
+  <div class="loading">Echoing through the archives...</div>
+</section>
+
+<div class="modal" id="modal">
+  <div class="modal-content" id="modalContent"></div>
+</div>
+
+<script>
   async function loadScrolls() {
     try {
-      async function loadScrolls() {
-  try {
-    const res = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll?bust=" + Date.now());
-    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-    const data = await res.json();
-    console.log("DEBUG JSON:", data); // <== Check console
-    const scrolls = data.scroll;
-
-    const container = document.getElementById("scrolls");
-    container.innerHTML = "";
-
-    scrolls.reverse().forEach(entry => {
-      const div = document.createElement("div");
-      div.className = "scroll";
-      div.innerHTML = `
-        <div class="rating">★ ${entry.rating || 0}</div>
-        <p>${entry.scroll}</p>
-        <div class="author">– ${entry.author || "Anonymous"}</div>
-      `;
-      container.appendChild(div);
-    });
-
-  } catch (error) {
-    document.getElementById("scrolls").innerHTML = "<div class='loading'>⚠️ The void refused to echo back.</div>";
-    console.error("Fetch error:", error);
-  }
-}
+      const res = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll?bust=" + Date.now());
+      if (!res.ok) throw new Error(`HTTP status ${res.status}`);
       const data = await res.json();
-      console.log("Sheety Response:", data);
-      const scrolls = data.scroll || data.scrolls;
-      const container = document.getElementById("scrolls");
+      let scrolls = data.scroll;
 
-      if (!scrolls || scrolls.length === 0) {
-        container.innerHTML = "<div class='loading'>No scrolls have echoed back yet.</div>";
-        return;
+      const container = document.getElementById("scrolls");
+      const searchInput = document.getElementById("search");
+      const sortSelect = document.getElementById("sort");
+
+      function renderScrolls() {
+        const term = searchInput.value.toLowerCase();
+        const sort = sortSelect.value;
+        let filtered = scrolls.filter(s => s.scroll.toLowerCase().includes(term) || (s.title || '').toLowerCase().includes(term));
+
+        if (sort === "rating") filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        else if (sort === "length") filtered.sort((a, b) => (b.scroll.length || 0) - (a.scroll.length || 0));
+        else filtered.reverse();
+
+        container.innerHTML = "";
+        filtered.forEach(entry => {
+          const div = document.createElement("div");
+          div.className = "scroll";
+          div.innerHTML = `
+            <div class="rating">★ ${entry.rating || 0}</div>
+            <strong>${entry.title || "Untitled Scroll"}</strong>
+            <p>${entry.scroll.substring(0, 100)}...</p>
+            <div class="author">– ${entry.author || "Anonymous"}</div>
+          `;
+          div.addEventListener('click', () => showModal(entry));
+          container.appendChild(div);
+        });
       }
 
-      container.innerHTML = ""; // Clear loading state
+      searchInput.addEventListener('input', renderScrolls);
+      sortSelect.addEventListener('change', renderScrolls);
 
-      scrolls.reverse().forEach(entry => {
-        const div = document.createElement("div");
-        div.className = "scroll";
-        div.innerHTML = `
-          <div class="rating">★ ${entry.rating || 0}</div>
-          <p>${entry.scroll}</p>
-          <div class="author">– ${entry.author || "Anonymous"}</div>
-        `;
-        container.appendChild(div);
-      });
+      renderScrolls();
 
     } catch (error) {
       document.getElementById("scrolls").innerHTML = "<div class='loading'>⚠️ The void refused to echo back.</div>";
       console.error("Failed to load scrolls:", error);
     }
+  }
+
+  function showModal(entry) {
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modalContent");
+    content.innerHTML = `
+      <h2>${entry.title || "Untitled Scroll"}</h2>
+      <p>${entry.scroll}</p>
+      <div class="author">– ${entry.author || "Anonymous"}</div>
+      <button onclick="document.getElementById('modal').style.display='none'">Close</button>
+    `;
+    modal.style.display = "flex";
   }
 
   loadScrolls();
