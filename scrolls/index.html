@@ -117,16 +117,16 @@
     const scroll = document.getElementById("scroll").value;
     const author = document.getElementById("author").value;
 
-    const response = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scrolls", {
+    const response = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        scrolls: {
-          scrolls: scroll,
-          authors: author,
-          ratings: 0
+        scroll: {
+          scroll: scroll,
+          author: author,
+          rating: 0
         }
       })
     });
