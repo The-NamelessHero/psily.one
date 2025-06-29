@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌀 Psily Scrolls Archive</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: #1a0d1f;
+      color: #fdf6f9;
+      font-family: 'Georgia', serif;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 3em;
+      color: #ffcdfd;
+      margin-bottom: 0.5em;
+    }
+
+    nav {
+      margin-bottom: 2em;
+    }
+
+    nav a {
+      color: #d9baff;
+      text-decoration: none;
+      margin: 0 1em;
+      font-weight: bold;
+    }
+
+    .scrolls-container {
+      max-width: 800px;
+      width: 100%;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 2em;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
+    }
+
+    .scroll {
+      background-color: rgba(255, 255, 255, 0.05);
+      margin-bottom: 1.5em;
+      padding: 1em;
+      border-radius: 8px;
+      text-align: left;
+    }
+
+    .scroll .meta {
+      font-size: 0.85em;
+      color: #c0ffee;
+    }
+  </style>
+</head>
+<body>
+  <h1>📜 Archive of Scrolls</h1>
+  <nav>
+    <a href="/">⛵ Home</a>
+    <a href="/blogposts.html">💌 Write</a>
+  </nav>
+
+  <div class="scrolls-container" id="scrolls">
+    <p>Loading scrolls...</p>
+  </div>
+
+  <script>
+    const sheetyURL = 'https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1';
+
+    async function loadScrolls() {
+      try {
+        const res = await fetch(sheetyURL);
+        const data = await res.json();
+        const scrolls = data.sheet1 || [];
+        const container = document.getElementById('scrolls');
+        container.innerHTML = '';
+
+        if (!scrolls.length) {
+          container.innerHTML = '<p>No scrolls have arrived yet.</p>';
+          return;
+        }
+
+        scrolls.reverse().forEach(s => {
+          const div = document.createElement('div');
+          div.className = 'scroll';
+          const content = s.scroll_text || s.scrollText || '— Blank scroll —';
+          const tags = s.tags || '';
+          const time = s.timestamp ? new Date(s.timestamp).toLocaleString() : 'Unknown time';
+
+          div.innerHTML = `
+            <div class="meta">${time} • ${tags}</div>
+            <p>${content.replace(/\n/g, '<br>')}</p>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        document.getElementById('scrolls').innerHTML = '<p>Failed to load scrolls.</p>';
+        console.error("Scroll load error:", err);
+      }
+    }
+
+    loadScrolls();
+  </script>
+</body>
+</html>
