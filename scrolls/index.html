@@ -111,12 +111,11 @@
     </form>
   </section>
 
- <script>
+<script>
   document.getElementById("scrollForm").addEventListener("submit", async function(e) {
     e.preventDefault();
     const scroll = document.getElementById("scroll").value;
     const author = document.getElementById("author").value;
-    const rating = document.getElementById("rating").value;
 
     const response = await fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll", {
       method: "POST",
@@ -124,7 +123,7 @@
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        scrolls: {
+        scroll: {
           scroll: scroll,
           author: author,
           rating: 0
