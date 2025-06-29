@@ -144,18 +144,21 @@
         return;
       }
 
-      fetch(sheetyURL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scroll: {
-            scroll_text: `Dear Void,\n\n${letter}\n\n— ${name}`,
-            tags: tags,
-            timestamp: timestamp,
-            reactions: JSON.stringify({ "❤️": 0, "😭": 0, "🔥": 0, "🧠": 0, "🐘": 0 })
-          }
-        })
-      })
+      fetch("https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/sheet1", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Basic a2Vma2F0Ok9uT21hdE9wTzNpQTIyPw==" // 👈 yours from the screenshot
+  },
+  body: JSON.stringify({
+    scroll: {
+      scroll_text: scrollText,
+      tags: tags,
+      timestamp: timestamp,
+      reactions: JSON.stringify({ "❤️": 0, "😭": 0, "🔥": 0, "🧠": 0, "🐘": 0 })
+    }
+  })
+})
       .then(response => response.json())
       .then(data => {
         document.getElementById('voidForm').reset();
