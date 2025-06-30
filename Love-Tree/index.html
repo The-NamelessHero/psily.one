@@ -2,19 +2,130 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Tree of Life</title>
+  <title>Tree of Love – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
+  <style>
+    body {
+      font-family: Georgia, serif;
+      background-color: #1a0f1f;
+      color: #f8e1ff;
+      margin: 0; padding: 1em;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2em;
+    }
+    nav a {
+      margin: 0 1em;
+      color: #b892ff;
+      text-decoration: none;
+    }
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #2d1b3a;
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255,200,255,0.2);
+    }
+    .node-form {
+      display: flex;
+      gap: 1em;
+      margin-bottom: 1em;
+    }
+    .node-form input {
+      flex: 1;
+      padding: .5em;
+      border-radius: 6px;
+      border: 1px solid #774da9;
+      background: #1e1127;
+      color: #fff3ff;
+    }
+    .node-form button {
+      padding: .5em 1em;
+      border: none;
+      border-radius: 6px;
+      background: #774da9;
+      color: white;
+      cursor: pointer;
+    }
+    #treeCanvas {
+      width: 100%;
+      height: 400px;
+      background: #1a0f1f;
+      border: 2px dashed #774da9;
+      border-radius: 8px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 2em;
+    }
+    footer a {
+      color: #b892ff;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <h1>🌳 Build your tree of love</h1>
+    <nav>
+      <a href="/">🌀 Home</a>
+      <a href="/scroll/">✍️ Write a Scroll</a>
+      <a href="/library/">📚 Library</a>
+      <a href="/tree/">🌳 Tree of Love</a>
+    </nav>
+    <h1>🌳 Build Your Tree</h1>
     <p>Let the void receive your words.</p>
   </header>
+
   <main>
-    <p>Node network in process.</p>
+    <form id="nodeForm" class="node-form">
+      <input id="parent"     name="parent"     placeholder="Parent Node"    required>
+      <input id="child"      name="child"      placeholder="Child Node"     required>
+      <button type="submit">Add Relationship</button>
+    </form>
+
+    <div id="treeCanvas">
+      <!-- Here we’ll render your nodes -->
+      <p style="color:#bbb; text-align:center; margin-top: 2em;">
+        Your tree will appear here once you add a relationship.
+      </p>
+    </div>
   </main>
+
   <footer>
-    <p><a href="/">← Back to Psily.one</a></p>
+    <a href="/">← Back to Psily.one</a>
   </footer>
+
+  <script>
+    const form   = document.getElementById('nodeForm');
+    const canvas = document.getElementById('treeCanvas');
+    const edges  = [];
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const parent = form.parent.value.trim();
+      const child  = form.child.value.trim();
+      if (!parent || !child) return;
+
+      // store the relationship
+      edges.push({ parent, child });
+      form.reset();
+      renderTree();
+    });
+
+    function renderTree() {
+      // simple text-based rendering for now
+      canvas.innerHTML = '';
+      edges.forEach(({parent, child}) => {
+        const div = document.createElement('div');
+        div.textContent = `${parent} → ${child}`;
+        div.style.color = '#fff3ff';
+        div.style.padding = '0.5em';
+        div.style.borderBottom = '1px solid #774da9';
+        canvas.appendChild(div);
+      });
+    }
+  </script>
 </body>
 </html>
