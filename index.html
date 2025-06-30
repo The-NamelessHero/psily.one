@@ -122,6 +122,17 @@
 }
 
 /* style & position the profile link */
+    .nav-button {
+  padding: 0.6em 1em;
+  background: #774da9;
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background .2s;
+}
+.nav-button:hover {
+  background: #a077ff;
+}
 .profile-link {
   position: absolute;
   top: 1rem;            /* adjust as needed */
@@ -147,11 +158,11 @@
       <a href="#features">Features</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
+      <a href="/profile/" class="nav-button">👤 Your Profile</a>
     </nav>
   </header>
 
   <section id="hero">
-    <a href="/profile/" class="profile-link">👤 Your Profile</a>
     <div>
       <h1>📖 Welcome to PS-ily</h1>
       <p>Where the echoes of the void are preserved, one scroll at a time.</p>
