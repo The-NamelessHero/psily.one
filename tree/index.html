@@ -69,8 +69,7 @@
   // ————————————————————————————————
 
   let userEmail = null;
-  let canEdit   = false;
-  let locked    = false;
+  let canEdit   = true;
   let selected  = null;
 
   // Initialize Netlify Identity
@@ -113,15 +112,7 @@
     physics: { enabled: true, stabilization:{ iterations:200 } }
   });
 
-  // Toggle edit/view mode
-  document.getElementById('toggleLock').onclick = () => {
-    locked = !locked; 
-    network.setOptions({ physics:{ enabled: !locked } });
-    [ 'addBtn','deleteBtn' ].forEach(id => {
-      document.getElementById(id).disabled = locked || !canEdit;
-    });
-    document.getElementById('toggleLock').textContent = locked ? '🔓 Edit Mode' : '🔒 View Only';
-  };
+ 
 
   // Helpers
   function getNodeId(label) {
