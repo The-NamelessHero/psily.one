@@ -75,6 +75,48 @@
       margin-top:1em;
     }
     .social-buttons a { font-size:1.5em; }
+    /* make About fill the viewport and grid into 2×2 */
+#about {
+  display: flex;               /* keep scroll-snap */
+  align-items: center;
+  justify-content: center;
+}
+#about .grid-container {
+  scroll-snap-align: start;    /* maintain snap */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1.5em;
+  width: 100%;
+  height: 100vh;
+  padding: 2em;
+  box-sizing: border-box;
+}
+#about .grid-item {
+  background: #2d1b3a;
+  border: 2px solid #774da9;
+  border-radius: 8px;
+  padding: 1.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+}
+#about .grid-item h2 {
+  margin-bottom: 0.5em;
+}
+#about .grid-item p {
+  flex: 1;
+  line-height: 1.4;
+}
+#about .grid-item img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 1em;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
   </style>
 </head>
 <body>
@@ -119,7 +161,6 @@
     <div class="grid-item">
       <h2>✨ Our Mission</h2>
       <p>Psily.one is a place where lost souls can scream into the void and sometimes the void echoes back.</p>
-      <img src="https://via.placeholder.com/300x200" alt="Mission Illustration">
     </div>
     <div class="grid-item">
       <h2>👥 Community</h2>
@@ -129,12 +170,11 @@
     <div class="grid-item">
       <h2>✍️ Write Your Scroll</h2>
       <p>Pour out your heart—each scroll is a new drop in our endless ocean of voices.</p>
-      <img src="https://via.placeholder.com/300x200" alt="Writing Illustration">
     </div>
     <div class="grid-item">
       <h2>🌳 Grow Your Tree</h2>
       <p>Plant your node, connect with kindred spirits, and watch your branches flourish.</p>
-      <img src="https://via.placeholder.com/300x200" alt="Tree Illustration">
+      <img src="https://i.pinimg.com/736x/39/24/73/392473e043a2219bac4504eb786446aa.jpg/300x200" alt="Tree Illustration">
     </div>
   </div>
 </section>
