@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile – Psily.one</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    body {
+      margin: 0; padding: 1em;
+      background: #1a0f1f; color: #f8e1ff;
+      font-family: Georgia, serif;
+      transition: background .3s, color .3s;
+    }
+    body.light-mode {
+      background: #d4d4d4; color: #1a0f1f;
+    }
+    header { text-align: center; margin-bottom: 2em; }
+    nav a, nav button {
+      margin: 0 1em; color: #b892ff;
+      text-decoration: none; background: none;
+      border: none; font: inherit; cursor: pointer;
+    }
+    main {
+      max-width: 600px; margin: 0 auto;
+      background: #2d1b3a; padding: 2em; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    }
+    label {
+      display: block; margin-top: 1em;
+      font-weight: bold;
+    }
+    input[type="text"], textarea {
+      width: 100%; padding: .5em; margin-top: .3em;
+      border-radius: 6px; border: 1px solid #774da9;
+      background: #1e1127; color: #fff3ff;
+      font-size: 1em;
+    }
+    body.light-mode input,
+    body.light-mode textarea {
+      background: #fff; color: #000; border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 1.5em; padding: .6em 1.2em;
+      font-size: 1em; border:none; border-radius: 6px;
+      background: #774da9; color: #fff; cursor: pointer;
+    }
+    #avatarPreview {
+      display: block; margin: 1em auto; max-width: 150px;
+      border-radius: 50%; border: 2px solid #774da9;
+    }
+    .loading { text-align: center; margin: 2em 0; color: #bbb; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="/">🌀 Home</a>
+      <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/library/">📚 Archive</a>
+      <a href="/tree/">🌳 Tree of Love</a>
+      <button onclick="toggleDark()">🌓</button>
+    </nav>
+    <h1>🧑 My Profile</h1>
+    <p>Customize your display name, bio, and avatar.</p>
+  </header>
+
+  <main id="main">
+    <div class="loading">Checking login…</div>
+  </main>
+
+  <script>
+    const SHEETY = 'https://api.sheety.co/YOUR_TOKEN/psily/profiles';
+    let profileId = null;
+
+    function toggleDark() {
+      document.body.classList.toggle('light-mode');
+    }
+
+    // 1) Init Netlify Identity
+    netlifyIdentity.init();
+    netlifyIdentity.on('login', user => {
+      netlifyIdentity.close();
+      showProfileForm(user.email);
+    });
+    netlifyIdentity.on('logout', () => {
+      document.getElementById('main').innerHTML =
+        '<div class="loading">Logged out. Refresh to log in again.</div>';
+    });
+
+    // Kick off: if already logged in, go straight to form
+    const currentUser = netlifyIdentity.currentUser();
+    if (currentUser) {
+      showProfileForm(currentUser.email);
+    } else {
+      // Prompt to login
+      const btn = document.createElement('button');
+      btn.id = 'loginBtn';
+      btn.textContent = '🔑 Log In / Sign Up';
+      btn.onclick = () => netlifyIdentity.open();
+      const container = document.getElementById('main');
+      container.innerHTML = '';
+      container.appendChild(btn);
+    }
+
+    async function showProfileForm(userEmail) {
+      const main = document.getElementById('main');
+      main.innerHTML = `<div class="loading">Loading your profile…</div>`;
+
+      // 2) Fetch existing profile row
+      const res = await fetch(`${SHEETY}?userId=${encodeURIComponent(userEmail)}`);
+      const data = (await res.json()).profiles || [];
+      let profile = data[0] || {};
+
+      profileId    = profile.id || null;
+      const name   = profile.displayName || '';
+      const bio    = profile.bio         || '';
+      const avatar = profile.avatar      || '';
+
+      // 3) Render form
+      main.innerHTML = `
+        <img id="avatarPreview" src="${avatar}" alt="Avatar">
+        <label for="displayName">Display Name</label>
+        <input type="text" id="displayName" value="${name}">
+        <label for="bio">Bio</label>
+        <textarea id="bio" rows="4">${bio}</textarea>
+        <label for="avatar">Avatar URL</label>
+        <input type="text" id="avatar" value="${avatar}">
+        <button id="saveBtn">💾 Save Profile</button>
+      `;
+
+      // live avatar preview
+      document.getElementById('avatar').addEventListener('input', e => {
+        document.getElementById('avatarPreview').src = e.target.value || '';
+      });
+
+      // 4) Save handler
+      document.getElementById('saveBtn').onclick = async () => {
+        const displayName = document.getElementById('displayName').value.trim();
+        const bioText     = document.getElementById('bio').value.trim();
+        const avatarUrl   = document.getElementById('avatar').value.trim();
+
+        const payload = {
+          profile: {
+            userId: userEmail,
+            displayName,
+            bio: bioText,
+            avatar: avatarUrl
+          }
+        };
+        let endpoint = SHEETY;
+        let method   = 'POST';
+
+        if (profileId) {
+          endpoint += `/${profileId}`;
+          method    = 'PUT';
+        }
+
+        const saveRes = await fetch(endpoint, {
+          method,
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (saveRes.ok) {
+          alert('✅ Profile saved!');
+          // refresh to pick up new ID if needed
+          showProfileForm(userEmail);
+        } else {
+          alert('⚠️ Failed to save. Try again.');
+        }
+      };
+    }
+  </script>
+</body>
+</html>
