@@ -11,25 +11,56 @@
 
   <style>
     body {
-      margin: 0; padding: 1em;
+      margin: 0;
+      padding: 1em;
       background: #1a0f1f;
       color: #f8e1ff;
       font-family: Georgia, serif;
     }
-    header { text-align: center; margin-bottom: 1em; }
+    header {
+      text-align: center;
+      margin-bottom: 1em;
+    }
     nav a, nav button {
-      margin: 0 1em; color: #b892ff;
-      text-decoration: none; background: none; border: none;
-      font: inherit; cursor: pointer;
+      margin: 0 1em;
+      color: #b892ff;
+      text-decoration: none;
+      background: none;
+      border: none;
+      font: inherit;
+      cursor: pointer;
     }
     #network {
-      width: 100%; height: 75vh;
+      width: 100%;
+      height: 75vh;
       border: 2px solid #774da9;
       border-radius: 8px;
       background: #2d1b3a;
     }
-    footer { text-align: center; margin-top: 1em; }
-    footer a { color: #b892ff; text-decoration: none; }
+    footer {
+      text-align: center;
+      margin-top: 1em;
+    }
+    footer a {
+      color: #b892ff;
+      text-decoration: none;
+    }
+    /* simple controls for future editing */
+    .controls {
+      text-align: center;
+      margin-bottom: 1em;
+    }
+    .controls input,
+    .controls select,
+    .controls button {
+      margin: 0 .5em;
+      padding: .5em;
+      border-radius: 4px;
+      border: 1px solid #774da9;
+      background: #1e1127;
+      color: #fff3ff;
+      font: inherit;
+    }
   </style>
 </head>
 <body>
@@ -43,8 +74,21 @@
       <button onclick="toggleDark()">🌓</button>
     </nav>
     <h1>🌳 Tree of Love</h1>
-    <p>A block-style family tree with special “love” links highlighted in red.</p>
+    <p>A block-style family tree with red “love” links.</p>
   </header>
+
+  <!-- Future: simple add-node UI -->
+  <div class="controls">
+    <!--
+    <input id="newName" placeholder="Name or Alias" />
+    <select id="relationType">
+      <option value="child">👶 child of</option>
+      <option value="love">❤️ loves</option>
+    </select>
+    <input id="targetName" placeholder="Target Name" />
+    <button onclick="addRelation()">Add Relation</button>
+    -->
+  </div>
 
   <div id="network"></div>
 
@@ -57,32 +101,23 @@
       document.body.classList.toggle('light-mode');
     }
 
-    // 1) Define all your people as nodes
+    // --- 1) Define nodes (everyone is a box by default) ---
     const nodes = new vis.DataSet([
-      // parents
-      { id: 1, label: 'Ronald',   shape:'box' },
-      { id: 2, label: 'Catherine',shape:'box' },
-      // their children
-      { id: 3, label: 'Joshua',   shape:'box' },
-      { id: 4, label: 'Justin',   shape:'box', color:{ background:'#ffde7d' } },
-      { id: 5, label: 'Jennifer', shape:'box' },
-      { id: 6, label: 'Jacob',    shape:'box' },
-      // love-interest nodes (could be outside this nuclear tree)
-      { id: 7, label: 'Samantha',shape:'box' },
-      { id: 8, label: 'Kristina', shape:'box' }
+      { id: 1, label: 'Ronald'    },
+      { id: 2, label: 'Catherine' },
+      { id: 3, label: 'Joshua'    },
+      { id: 4, label: 'Justin'    },
+      { id: 5, label: 'Jennifer'  },
+      { id: 6, label: 'Jacob'     },
+      { id: 7, label: 'Samantha'  },
+      { id: 8, label: 'Kristina'  }
     ]);
 
-    // 2) Normal parent→child edges (solid, in your accent color)
+    // --- 2) Parent→Child edges (solid, accent color, with arrow) ---
     const parentChildEdges = [
-      { from: 1, to: 3 },
-      { from: 1, to: 4 },
-      { from: 1, to: 5 },
-      { from: 1, to: 6 },
-      { from: 2, to: 3 },
-      { from: 2, to: 4 },
-      { from: 2, to: 5 },
-      { from: 2, to: 6 }
-    ].map(e => ({
+      { from:1,to:3},{from:1,to:4},{from:1,to:5},{from:1,to:6},
+      { from:2,to:3},{from:2,to:4},{from:2,to:5},{from:2,to:6}
+    ].map(e=>({
       ...e,
       arrows: 'to',
       color: { color: '#cfaaff' },
@@ -90,28 +125,37 @@
       width: 2
     }));
 
-    // 3) “Love links” in bright red, dashed
+    // --- 3) Love links (dashed red, no arrow) ---
     const loveEdges = [
-      { from: 4, to: 7 },  // Justin ↔ Samantha
-      { from: 4, to: 8 }   // Justin ↔ Kristina
-    ].map(e => ({
+      { from:4, to:7 },
+      { from:4, to:8 }
+    ].map(e=>({
       ...e,
       dashes: true,
       color: { color: 'red' },
       width: 3,
-      arrows: ''            // no arrow for love-link
+      arrows: '' 
     }));
 
-    const edges = new vis.DataSet([ ...parentChildEdges, ...loveEdges ]);
+    const edges = new vis.DataSet([ 
+      ...parentChildEdges, 
+      ...loveEdges 
+    ]);
 
-    // 4) Initialize the network
+    // --- 4) Init network with default node shape = box ---
     const container = document.getElementById('network');
     const data = { nodes, edges };
     const options = {
+      nodes: {
+        shape: 'box',
+        margin: 10,
+        widthConstraint: { maximum: 200 },
+        font: { multi: 'html' }
+      },
       layout: {
         hierarchical: {
           enabled: true,
-          direction: 'UD',        // top down
+          direction: 'UD',
           sortMethod: 'directed',
           nodeSpacing: 200,
           levelSeparation: 150
@@ -119,12 +163,27 @@
       },
       interaction: {
         dragNodes: true,
-        dragView:  true,
-        zoomView:  true
+        dragView: true,
+        zoomView: true
       },
       physics: { enabled: false }
     };
+
     new vis.Network(container, data, options);
+
+    // --- (optional) future function to add nodes/edges dynamically ---
+    /*
+    function addRelation() {
+      const name = document.getElementById('newName').value.trim();
+      const target = document.getElementById('targetName').value.trim();
+      const type = document.getElementById('relationType').value;
+      if (!name||!target) return alert('Fill both fields');
+      // ... find or create nodes, add appropriate edge ...
+      // nodes.add({ id: nextId, label: name });
+      // edges.add({ from: idOf(name), to: idOf(target), ... });
+    }
+    */
   </script>
+
 </body>
 </html>
