@@ -9,7 +9,7 @@
       --dark-bg: #1a0f1f;
       --light-bg: #d4d4d4;
       --font-color: #f8e1ff;
-      --scroll-bg: #c1c085;
+      --scroll-bg: #f0cd91;
       --scroll-text: #111;
     }
 
@@ -114,6 +114,38 @@
       from { opacity:0; transform: scale(0.95); }
       to   { opacity:1; transform: scale(1);    }
     }
+    /* Light-mode overrides */
+body.light-mode {
+  --scroll-card-bg: #f3e0b2;
+  --scroll-card-text: #1a0f1f;
+  --input-bg:      #ffffff;
+  --input-text:    #000000;
+  --input-border:  #cccccc;
+}
+
+body.light-mode .scroll {
+  background-color: var(--scroll-card-bg);
+  border-color:     #c4b091;
+}
+
+body.light-mode .scroll p,
+body.light-mode .scroll h3,
+body.light-mode .scroll .author,
+body.light-mode .scroll .rating {
+  color: var(--scroll-card-text);
+}
+
+body.light-mode .controls input,
+body.light-mode .controls select {
+  background-color: var(--input-bg);
+  color:            var(--input-text);
+  border-color:     var(--input-border);
+}
+
+/* If you ever need the popup text darker on light, override it too */
+body.light-mode #scrollPopup {
+  color: var(--scroll-card-text);
+}
   </style>
 </head>
 <body>
