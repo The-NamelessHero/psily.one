@@ -2,308 +2,183 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>The Library – Psily.one</title>
+  <title>Tree of Love – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
-  <style>
-    :root {
-      --dark-bg: #1a0f1f;
-      --light-bg: #d4d4d4;
-      --font-color: #f8e1ff;
-      --scroll-bg: #fdfdf5;    /* parchment tone */
-      --scroll-border: #c4a76f; /* soft gold */
-      --scroll-text: #222;
-      --popup-shadow: rgba(0,0,0,0.4);
-    }
 
-    /* Base styles */
+  <!-- vis-network CSS & JS -->
+  <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+  <style>
     body {
+      margin:0; padding:1em;
+      background: #1a0f1f;
+      color: #f8e1ff;
       font-family: Georgia, serif;
-      margin: 0; padding: 1em;
-      background-color: var(--dark-bg);
-      color: var(--font-color);
-      transition: background-color .3s, color .3s;
+      transition: background .3s, color .3s;
     }
     body.light-mode {
-      background-color: var(--light-bg);
-      color: #1a0f1f;
+      background: #f4f4f4;
+      color: #222;
     }
-    header { text-align: center; margin-bottom: 2em; }
+    header { text-align:center; margin-bottom:1em; }
     nav a, nav button {
-      margin: 0 1em; color: #b892ff;
-      background: none; border: none; font: inherit;
-      cursor: pointer; text-decoration: none;
+      margin:0 1em; color:#b892ff;
+      text-decoration:none; background:none; border:none;
+      font:inherit; cursor:pointer;
     }
-    .controls { text-align: center; margin-bottom: 2em; }
-    .controls input, .controls select {
-      padding: .5em; margin: 0 .5em; font-size: 1em;
-      border-radius: 6px; border: 1px solid #774da9;
-      background: #1e1127; color: #fff3ff;
+    #controls {
+      display:flex; justify-content:center; gap:1em; margin-bottom:1em;
     }
+    #controls input, #controls select, #controls button {
+      padding:.5em 1em; border-radius:6px;
+      border:1px solid #774da9; background:#2d1b3a; color:#fff3ff;
+      font-size:1em; transition: background .3s, color .3s;
+    }
+    body.light-mode #controls input,
+    body.light-mode #controls select,
+    body.light-mode #controls button {
+      background: #fff; color: #222; border-color: #ccc;
+    }
+    #network {
+      width:100%; height:70vh;
+      border:2px solid #774da9; border-radius:8px;
+      background:#2d1b3a;
+      transition: background .3s;
+    }
+    body.light-mode #network {
+      background: #fafafa;
+    }
+    footer { text-align:center; margin-top:1em; }
+    footer a { color:#b892ff; text-decoration:none; }
 
-    /* Scroll cards */
-    .scroll {
-      position: relative;
-      background: #2d1b3a;
-      border: 2px solid #774da9;
-      border-radius: 10px;
-      padding: 1.5em; margin-bottom: 1.5em;
-      box-shadow: 0 0 10px rgba(255,200,255,0.1);
-      cursor: pointer;
-    }
-    .scroll .rating {
-      position: absolute; top: 1em; right: 1em;
-      color: #aaa; font-size: .8em;
-    }
-    .scroll h3 {
-      margin: 0 0 .5em;
-      color: #fff3ff; font-size: 1.2em;
-    }
-    .scroll .author {
-      margin-top: 1em; font-size: .9em; color: #cfaaff;
-    }
-    .scroll .reactions {
-      margin-top: .8em; text-align: center;
-    }
-    .scroll .reactions button {
-      margin: 0 .2em; padding: .4em .6em;
-      font-size: 1em; border: none; border-radius: 6px;
-      cursor: pointer;
-    }
-    .scroll .reactions button:disabled {
-      opacity: .4; cursor: default;
-    }
-
-    .loading {
-      text-align: center; color: #bbb;
-      font-style: italic; margin-top: 2em;
-    }
-
-    /* Popup overlay */
-    #scrollModal {
-      display: none; /* toggled to flex via JS */
-      position: fixed; top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
-      justify-content: center; align-items: center;
-      z-index: 1000;
-    }
-    #overlay { position:absolute; width:100%; height:100%; }
-
-    /* Framed popup */
-    #scrollPopup {
-      background: var(--scroll-bg);
-      border: 3px solid var(--scroll-border);
-      border-radius: 12px;
-      padding: 2em;
-      max-width: 800px;
-      width: 90%;
-      max-height: 85vh;
-      overflow-y: auto;
-      box-shadow: 0 0 20px var(--popup-shadow);
-      position: relative;
-      color: var(--scroll-text);
-      font-family: Georgia, serif;
-      animation: fadeIn 0.4s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity:0; transform: translateY(-20px); }
-      to   { opacity:1; transform: translateY(0); }
-    }
-
-    /* Close button */
-    #closeScroll {
-      position: absolute; top: .8em; right: .8em;
-      font-size: 1.2em; cursor: pointer; color: #333;
-      background: rgba(255,255,255,0.8);
-      border-radius: 50%; width:1.8em; height:1.8em;
-      line-height:1.8em; text-align:center;
-    }
-
-    /* Popup content */
-    #scrollPopup h2 {
-      margin-top: 0; font-size: 1.6em; color: #333;
-    }
-    #scrollPopup p {
-      line-height: 1.5; margin: 1em 0;
-    }
-    #scrollPopup .author {
-      margin-top: 1.5em; font-style: italic; color: #555;
-    }
-
-    /* Reaction bar */
-    .reaction-bar {
-      display: flex; justify-content: center;
-      margin-top: 1.5em; gap: 1.2em;
-    }
-    .reaction-bar span {
-      cursor: pointer; font-size: 1.5em; position: relative;
-      transition: transform .2s;
-    }
-    .reaction-bar span:hover {
-      transform: scale(1.2);
-      filter: drop-shadow(0 0 6px gold);
-    }
-    .reaction-bar span::after {
-      content: attr(data-bonus);
-      position: absolute; top:-1.2em; left:50%;
-      transform: translateX(-50%);
-      font-size: .7em; color: #777;
-    }
-
-    /* Light-mode overrides */
-    body.light-mode .scroll {
-      background-color: #ddd7ab;
-      border-color: #c4b091;
-    }
-    body.light-mode .scroll h3,
-    body.light-mode .scroll p,
-    body.light-mode .scroll .author,
-    body.light-mode .scroll .rating {
-      color: #1a0f1f;
-    }
-    body.light-mode .controls input,
-    body.light-mode .controls select {
-      background-color: #fff;
-      color: #000;
-      border-color: #ccc;
-    }
-    body.light-mode #scrollPopup {
-      background: #f3e0b2;
-      color: #1a0f1f;
-      border-color: #c4b091;
+    /* Optional: Vis.js overrides for light-mode boxes */
+    body.light-mode .vis-network .vis-node {
+      background-color: #ddd7ab !important;
+      border-color: #c4b091 !important;
+      color: #222 !important;
     }
   </style>
 </head>
 <body>
-  <audio autoplay loop>
-    <source src="https://cdn.pixabay.com/audio/2022/03/04/audio_14b18bcb15.mp3" type="audio/mpeg">
-  </audio>
 
   <header>
     <nav>
-  <a class="home-link" href="/">🌀 Home</a>
-  <a href="/scrolls/">✍️ Write a Scroll</a>
-  <a href="/tree/">🌳 Tree of Love</a>
-  <a href="/profile/">👤 Profile</a>
-</nav>
-    <h1>🏛️ The Library</h1>
-    <p>Where the echoes of the void are preserved.
-       (only 1 vote per scroll)</p>
+      <a href="/">🌀 Home</a>
+      <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/library/">🏛️ Library</a>
+      <a href="/profile/">👤 Profile</a>
+      <button onclick="toggleDark()">🌓</button>
+    </nav>
+    <h1>🌳 Tree of Love</h1>
+    <p>Select a parent, add a child—and watch your family tree grow.</p>
   </header>
 
-  <section class="controls">
-    <input type="text" id="search" placeholder="Search scrolls…">
-    <select id="sort">
-      <option value="latest">Latest</option>
-      <option value="rating">Rating</option>
-      <option value="length">Length</option>
+  <div id="controls">
+    <select id="parentSelect">
+      <option value="">— Select Parent —</option>
     </select>
-  </section>
-
-  <section id="scrolls">
-    <div class="loading">Echoing through the archives…</div>
-  </section>
-
-  <!-- Popup -->
-  <div id="scrollModal">
-    <div id="overlay"></div>
-    <div id="scrollPopup">
-      <span id="closeScroll">✖</span>
-      <h2 id="popupTitle">Untitled Scroll</h2>
-      <p id="popupText"></p>
-      <div class="author" id="popupAuthor">– Anonymous</div>
-      <div class="reaction-bar">
-        <span onclick="react(currentId,1)"  data-bonus="+1">🥲</span>
-        <span onclick="react(currentId,2)"  data-bonus="+2">❤️</span>
-        <span onclick="react(currentId,3)"  data-bonus="+3">⭐</span>
-        <span onclick="react(currentId,1)"  data-bonus="+1">👍</span>
-        <span onclick="react(currentId,-1)" data-bonus="-1">👎</span>
-      </div>
-    </div>
+    <input id="childInput" placeholder="New member name…" />
+    <button id="addBtn">➕ Add</button>
   </div>
 
-  <script>
-    let currentId = null;
+  <div id="network"></div>
 
-    function toggleDarkMode() {
+  <footer>
+    <a href="/">← Back to Psily.one</a>
+  </footer>
+
+  <script>
+    // Dark/light toggle
+    function toggleDark() {
       document.body.classList.toggle('light-mode');
     }
 
-    async function loadScrolls() {
-      const container = document.getElementById('scrolls');
-      container.innerHTML = '<div class="loading">Echoing through the archives…</div>';
-      try {
-        const res  = await fetch('https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll');
-        const data = await res.json();
-        const scrolls = data.scroll || [];
-        container.innerHTML = '';
+    // 1) Setup vis-data
+    const container = document.getElementById('network');
+    const nodes     = new vis.DataSet();
+    const edges     = new vis.DataSet();
+    let network;
 
-        if (!scrolls.length) {
-          container.innerHTML = '<div class="loading">No scrolls have echoed back yet.</div>';
-          return;
-        }
+    // 2) Prompt root node
+    const userName = prompt("Enter your name to start your Tree of Love") || "Anonymous";
+    nodes.add({
+      id: userName,
+      label: userName,
+      shape: 'box',
+      color: { background:'#ffde7d', border:'#c4a76f' },
+      font:  { color:'#1a0f1f', size:16 },
+      margin: { top:8, bottom:8, left:12, right:12 }
+    });
 
-        scrolls.reverse().forEach(entry => {
-          const id    = entry.id;
-          const voted = !!localStorage.getItem(`voted-${id}`);
-          const div   = document.createElement('div');
-          div.className = 'scroll';
-          div.innerHTML = `
-            <div class="rating">★ ${entry.rating||0}</div>
-            <h3>${entry.title||'Untitled Scroll'}</h3>
-            <p>${entry.scroll}</p>
-            <div class="author">– ${entry.author||'Anonymous'}</div>
-            <div class="reactions">
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},1)">🥲 +1</button>
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},2)">❤️ +2</button>
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},3)">⭐ +3</button>
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},1)">👍 +1</button>
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},-1)">👎 -1</button>
-            </div>
-          `;
-          div.addEventListener('click', () => {
-            currentId = id;
-            document.getElementById('popupTitle').innerText  = entry.title || 'Untitled Scroll';
-            document.getElementById('popupText').innerText   = entry.scroll;
-            document.getElementById('popupAuthor').innerText = `– ${entry.author || 'Anonymous'}`;
-            document.getElementById('scrollModal').style.display = 'flex';
-          });
-          container.appendChild(div);
-        });
+    // 3) Draw function
+    function draw() {
+      // Rebuild parent dropdown
+      const parentSelect = document.getElementById('parentSelect');
+      parentSelect.innerHTML = '<option value="">— Select Parent —</option>' +
+        nodes.get().map(n => `<option value="${n.id}">${n.label}</option>`).join('');
 
-      } catch (e) {
-        container.innerHTML = '<div class="loading">⚠️ The void refused to echo back.</div>';
-        console.error(e);
-      }
-    }
+      // Destroy old network
+      if (network) network.destroy();
 
-    async function vote(id, current, delta) {
-      const next = current + delta;
-      try {
-        const res = await fetch(
-          `https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll/${id}`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type':'application/json' },
-            body: JSON.stringify({ scroll:{ rating: next } })
+      // Create new network
+      network = new vis.Network(container, { nodes, edges }, {
+        layout: {
+          hierarchical: {
+            enabled: true,
+            direction: 'UD',
+            sortMethod: 'directed',
+            levelSeparation: 150,
+            nodeSpacing: 200
           }
-        );
-        if (res.ok) {
-          localStorage.setItem(`voted-${id}`, 'true');
-          loadScrolls();
-        } else {
-          alert('⚠️ The void rejected your blessing.');
+        },
+        interaction: {
+          dragNodes: true,
+          dragView: true,
+          zoomView: true
+        },
+        physics: { enabled: false },
+        nodes: {
+          shape: 'box',
+          margin: { top:8, bottom:8, left:12, right:12 },
+          font: { color:'#fff3ff', size:16 },
+          color: { background:'#774da9', border:'#b892ff' }
+        },
+        edges: {
+          color: '#cfaaff',
+          width: 2,
+          smooth: { type:'cubicBezier', forceDirection:'vertical', roundness:0.4 }
         }
-      } catch {
-        alert('⚠️ Connection to the void failed.');
-      }
+      });
+
+      // Center on the root user node
+      network.once('afterDrawing', () => {
+        network.focus(userName, { scale:1.2, animation:{ duration:600 } });
+      });
     }
 
-    document.getElementById('closeScroll').onclick = () => {
-      document.getElementById('scrollModal').style.display = 'none';
+    // 4) Add new member
+    document.getElementById('addBtn').onclick = () => {
+      const parent = document.getElementById('parentSelect').value;
+      const child  = document.getElementById('childInput').value.trim();
+      if (!parent) alert("Please select a parent node first.");
+      else if (!child) alert("Enter the child's name.");
+      else if (nodes.get(child)) alert("That name already exists.");
+      else {
+        nodes.add({
+          id: child,
+          label: child,
+          shape: 'box',
+          margin: { top:8, bottom:8, left:12, right:12 }
+        });
+        edges.add({ from: parent, to: child });
+        document.getElementById('childInput').value = '';
+        draw();
+      }
     };
 
-    loadScrolls();
+    // 5) Initial draw
+    draw();
   </script>
 </body>
 </html>
