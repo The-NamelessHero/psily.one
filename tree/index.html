@@ -58,6 +58,20 @@
   </footer>
 
   <script>
+    netlifyIdentity.init();
+    let userEmail = null;
+    let canEdit   = false;
+
+    netlifyIdentity.on('login', user => {
+    userEmail = user.email;
+    canEdit   = true;
+    loadTreeFromSheet();
+  });
+    netlifyIdentity.on('logout', () => {
+    userEmail = null;
+    canEdit   = false;
+    nodes.clear(); edges.clear();
+  });
     // ——————————————————
     // Setup user & storage
     // ——————————————————
