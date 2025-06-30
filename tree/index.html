@@ -107,6 +107,16 @@
       }
     };
     const network = new vis.Network(container, data, options);
+    hierarchical: {
+      enabled:           true,
+      direction:         'UD',         // top‐down
+      sortMethod:        'directed',
+      levelSeparation:   200,          // more vertical breathing room
+      nodeSpacing:       300,          // more horizontal breathing room
+      blockShifting:     false,        // don’t push whole blocks around
+      edgeMinimization:  false,        // disable crossing‐reduction
+      parentCentralization: false      // leave children where they fall
+    }
 
     // Load saved tree if exists
     const saved = localStorage.getItem(storageKey);
