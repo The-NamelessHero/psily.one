@@ -25,9 +25,13 @@
 
     header { text-align: center; margin-bottom: 2em; }
     nav a, nav button {
-      margin: 0 1em; color: #b892ff;
-      background: none; border: none; font: inherit;
-      cursor: pointer; text-decoration: none;
+      margin: 0 1em;
+      color: #b892ff;
+      background: none;
+      border: none;
+      font: inherit;
+      cursor: pointer;
+      text-decoration: none;
     }
 
     .controls { text-align: center; margin-bottom: 2em; }
@@ -71,49 +75,49 @@
     }
 
     /* ==== POPUP STYLES ==== */
-#scrollModal {
-  display: none;               /* shown via JS as inline style 'flex' */
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(6px);
-  justify-content: center;     /* center child horizontally */
-  align-items: center;         /* center child vertically */
-  z-index: 1000;
-}
-
-/* SCROLL POPUP – no absolute positioning, rely on parent flex */
-#scrollPopup {
-  width: 350px;                /* fixed width that matches parchment aspect */
-  max-width: 90%;              /* shrink on small screens */
-  max-height: 90vh;            /* never overflow viewport */
-  background: url('ancient-parchment.png') 
-              center center no-repeat;
-  background-size: contain;    /* scale whole image in box */
-  padding: 2.5em 1.5em;        /* leave room inside borders */
-  box-sizing: border-box;
-  overflow-y: auto;            /* scroll text inside parchment */
-  position: relative;
-}
-
-/* CLOSE BUTTON inside popup */
-#closeScroll {
-  position: absolute;
-  top: 8px; right: 8px;
-  font-size: 1.4em;
-  color: #333;
-  background: rgba(255,255,255,0.8);
-  border-radius: 50%;
-  width: 1.8em; height: 1.8em;
-  line-height: 1.8em;
-  text-align: center;
-  cursor: pointer;
-}
-
+    #scrollModal {
+      display: none; /* toggled to 'flex' via JS */
+      position: fixed; top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(6px);
+      justify-content: center;  /* center horizontally */
+      align-items: center;      /* center vertically */
+      z-index: 1000;
+    }
+    #overlay {
+      position: absolute; width:100%; height:100%;
+      background: transparent;
+    }
+    #scrollPopup {
+      width: 60vw;               /* adapt width to viewport */
+      max-width: 800px;
+      height: 80vh;
+      background: url('ancient-parchment.png') no-repeat center center;
+      background-size: cover;    /* fill container with parchment */
+      padding: 3em 2em;
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      overflow-y: auto;          /* scroll text inside */
+      display: flex;
+      flex-direction: column;
+      font-family: Georgia, serif;
+      color: #1a0f1f;            /* dark text on parchment */
+      animation: scrollIn .5s ease-out;
+      position: relative;
+    }
+    #closeScroll {
+      position: absolute; top: 1em; right: 1em;
+      font-size: 1.2em; cursor: pointer; color: #333;
+      background: rgba(255,255,255,0.8); border-radius:50%;
+      width:1.8em; height:1.8em; line-height:1.8em;
+      text-align:center;
+    }
+    #scrollContent {
+      flex: 1; overflow-y: auto;
+    }
 
     @keyframes scrollIn {
-      from { transform: translate(-50%, -30px) scaleY(.9); opacity: 0; }
-      to   { transform: translate(-50%, 0)    scaleY(1);  opacity: 1; }
+      from { transform: translateY(-30px) scaleY(.9); opacity:0; }
+      to   { transform: translateY(0)     scaleY(1);  opacity:1; }
     }
   </style>
 </head>
@@ -238,6 +242,11 @@
       document.getElementById('scrollModal').style.display = 'none';
     };
 
+    // initial load
+    loadScrolls();
+  </script>
+</body>
+</html>
     // kick off
     loadScrolls();
   </script>
