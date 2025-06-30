@@ -11,53 +11,25 @@
 
   <style>
     body {
-      margin:0; padding:1em;
+      margin: 0; padding: 1em;
       background: #1a0f1f;
       color: #f8e1ff;
       font-family: Georgia, serif;
-      transition: background .3s, color .3s;
     }
-    body.light-mode {
-      background: #f4f4f4;
-      color: #222;
-    }
-    header { text-align:center; margin-bottom:1em; }
+    header { text-align: center; margin-bottom: 1em; }
     nav a, nav button {
-      margin:0 1em; color:#b892ff;
-      text-decoration:none; background:none; border:none;
-      font:inherit; cursor:pointer;
-    }
-    #controls {
-      display:flex; justify-content:center; gap:1em; margin-bottom:1em;
-    }
-    #controls input, #controls select, #controls button {
-      padding:.5em 1em; border-radius:6px;
-      border:1px solid #774da9; background:#2d1b3a; color:#fff3ff;
-      font-size:1em; transition: background .3s, color .3s;
-    }
-    body.light-mode #controls input,
-    body.light-mode #controls select,
-    body.light-mode #controls button {
-      background: #fff; color: #222; border-color: #ccc;
+      margin: 0 1em; color: #b892ff;
+      text-decoration: none; background: none; border: none;
+      font: inherit; cursor: pointer;
     }
     #network {
-      width:100%; height:70vh;
-      border:2px solid #774da9; border-radius:8px;
-      background:#2d1b3a;
-      transition: background .3s;
+      width: 100%; height: 75vh;
+      border: 2px solid #774da9;
+      border-radius: 8px;
+      background: #2d1b3a;
     }
-    body.light-mode #network {
-      background: #fafafa;
-    }
-    footer { text-align:center; margin-top:1em; }
-    footer a { color:#b892ff; text-decoration:none; }
-
-    /* Optional: Vis.js overrides for light-mode boxes */
-    body.light-mode .vis-network .vis-node {
-      background-color: #ddd7ab !important;
-      border-color: #c4b091 !important;
-      color: #222 !important;
-    }
+    footer { text-align: center; margin-top: 1em; }
+    footer a { color: #b892ff; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -65,22 +37,14 @@
   <header>
     <nav>
       <a href="/">🌀 Home</a>
-      <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/scroll/">✍️ Write a Scroll</a>
       <a href="/library/">🏛️ Library</a>
       <a href="/profile/">👤 Profile</a>
       <button onclick="toggleDark()">🌓</button>
     </nav>
     <h1>🌳 Tree of Love</h1>
-    <p>Select a parent, add a child—and watch your family tree grow.</p>
+    <p>A block-style family tree with special “love” links highlighted in red.</p>
   </header>
-
-  <div id="controls">
-    <select id="parentSelect">
-      <option value="">— Select Parent —</option>
-    </select>
-    <input id="childInput" placeholder="New member name…" />
-    <button id="addBtn">➕ Add</button>
-  </div>
 
   <div id="network"></div>
 
@@ -89,96 +53,78 @@
   </footer>
 
   <script>
-    // Dark/light toggle
-    function toggleDark() {
+    function toggleDark(){
       document.body.classList.toggle('light-mode');
     }
 
-    // 1) Setup vis-data
+    // 1) Define all your people as nodes
+    const nodes = new vis.DataSet([
+      // parents
+      { id: 1, label: 'Ronald',   shape:'box' },
+      { id: 2, label: 'Catherine',shape:'box' },
+      // their children
+      { id: 3, label: 'Joshua',   shape:'box' },
+      { id: 4, label: 'Justin',   shape:'box', color:{ background:'#ffde7d' } },
+      { id: 5, label: 'Jennifer', shape:'box' },
+      { id: 6, label: 'Jacob',    shape:'box' },
+      // love-interest nodes (could be outside this nuclear tree)
+      { id: 7, label: 'Samantha',shape:'box' },
+      { id: 8, label: 'Kristina', shape:'box' }
+    ]);
+
+    // 2) Normal parent→child edges (solid, in your accent color)
+    const parentChildEdges = [
+      { from: 1, to: 3 },
+      { from: 1, to: 4 },
+      { from: 1, to: 5 },
+      { from: 1, to: 6 },
+      { from: 2, to: 3 },
+      { from: 2, to: 4 },
+      { from: 2, to: 5 },
+      { from: 2, to: 6 }
+    ].map(e => ({
+      ...e,
+      arrows: 'to',
+      color: { color: '#cfaaff' },
+      smooth: { type:'straight' },
+      width: 2
+    }));
+
+    // 3) “Love links” in bright red, dashed
+    const loveEdges = [
+      { from: 4, to: 7 },  // Justin ↔ Samantha
+      { from: 4, to: 8 }   // Justin ↔ Kristina
+    ].map(e => ({
+      ...e,
+      dashes: true,
+      color: { color: 'red' },
+      width: 3,
+      arrows: ''            // no arrow for love-link
+    }));
+
+    const edges = new vis.DataSet([ ...parentChildEdges, ...loveEdges ]);
+
+    // 4) Initialize the network
     const container = document.getElementById('network');
-    const nodes     = new vis.DataSet();
-    const edges     = new vis.DataSet();
-    let network;
-
-    // 2) Prompt root node
-    const userName = prompt("Enter your name to start your Tree of Love") || "Anonymous";
-    nodes.add({
-      id: userName,
-      label: userName,
-      shape: 'box',
-      color: { background:'#ffde7d', border:'#c4a76f' },
-      font:  { color:'#1a0f1f', size:16 },
-      margin: { top:8, bottom:8, left:12, right:12 }
-    });
-
-    // 3) Draw function
-    function draw() {
-      // Rebuild parent dropdown
-      const parentSelect = document.getElementById('parentSelect');
-      parentSelect.innerHTML = '<option value="">— Select Parent —</option>' +
-        nodes.get().map(n => `<option value="${n.id}">${n.label}</option>`).join('');
-
-      // Destroy old network
-      if (network) network.destroy();
-
-      // Create new network
-      network = new vis.Network(container, { nodes, edges }, {
-        layout: {
-          hierarchical: {
-            enabled: true,
-            direction: 'UD',
-            sortMethod: 'directed',
-            levelSeparation: 150,
-            nodeSpacing: 200
-          }
-        },
-        interaction: {
-          dragNodes: true,
-          dragView: true,
-          zoomView: true
-        },
-        physics: { enabled: false },
-        nodes: {
-          shape: 'box',
-          margin: { top:8, bottom:8, left:12, right:12 },
-          font: { color:'#fff3ff', size:16 },
-          color: { background:'#774da9', border:'#b892ff' }
-        },
-        edges: {
-          color: '#cfaaff',
-          width: 2,
-          smooth: { type:'cubicBezier', forceDirection:'vertical', roundness:0.4 }
+    const data = { nodes, edges };
+    const options = {
+      layout: {
+        hierarchical: {
+          enabled: true,
+          direction: 'UD',        // top down
+          sortMethod: 'directed',
+          nodeSpacing: 200,
+          levelSeparation: 150
         }
-      });
-
-      // Center on the root user node
-      network.once('afterDrawing', () => {
-        network.focus(userName, { scale:1.2, animation:{ duration:600 } });
-      });
-    }
-
-    // 4) Add new member
-    document.getElementById('addBtn').onclick = () => {
-      const parent = document.getElementById('parentSelect').value;
-      const child  = document.getElementById('childInput').value.trim();
-      if (!parent) alert("Please select a parent node first.");
-      else if (!child) alert("Enter the child's name.");
-      else if (nodes.get(child)) alert("That name already exists.");
-      else {
-        nodes.add({
-          id: child,
-          label: child,
-          shape: 'box',
-          margin: { top:8, bottom:8, left:12, right:12 }
-        });
-        edges.add({ from: parent, to: child });
-        document.getElementById('childInput').value = '';
-        draw();
-      }
+      },
+      interaction: {
+        dragNodes: true,
+        dragView:  true,
+        zoomView:  true
+      },
+      physics: { enabled: false }
     };
-
-    // 5) Initial draw
-    draw();
+    new vis.Network(container, data, options);
   </script>
 </body>
 </html>
