@@ -106,17 +106,38 @@
         stabilization: { iterations: 200 }
       }
     };
-    const network = new vis.Network(container, data, options);
+    const options = {
+  layout: {
     hierarchical: {
-      enabled:           true,
-      direction:         'UD',         // top‐down
-      sortMethod:        'directed',
-      levelSeparation:   200,          // more vertical breathing room
-      nodeSpacing:       300,          // more horizontal breathing room
-      blockShifting:     false,        // don’t push whole blocks around
-      edgeMinimization:  false,        // disable crossing‐reduction
-      parentCentralization: false      // leave children where they fall
+      enabled: true,
+      direction: 'UD',
+      sortMethod: 'directed',
+      levelSeparation: 200,
+      nodeSpacing: 300,
+      blockShifting: false,
+      edgeMinimization: false,
+      parentCentralization: false
     }
+  },
+  interaction: {
+    dragNodes: true,
+    dragView:  true,
+    zoomView:  true
+  },
+  physics: {
+    enabled: true,
+    stabilization: { iterations: 500 }
+  },
+  nodes: {
+    shape: 'box',
+    margin: { top:8, bottom:8, left:12, right:12 }
+  },
+  edges: {
+    smooth: { type:'straight' }
+  }
+};
+
+new vis.Network(container, { nodes, edges }, options);
 
     // Load saved tree if exists
     const saved = localStorage.getItem(storageKey);
