@@ -59,6 +59,7 @@
     </select>
     <input id="nameB" placeholder="Name B" />
     <button onclick="addRelation()">Add Relation</button>
+    <button id="deleteBtn" disabled>🗑️ Delete Selected</button>
   </div>
 
   <div id="network"></div>
@@ -188,6 +189,33 @@
         }
       }
     });
+    let selectedNode = null;
+
+// 1) Listen for clicks in the network
+network.on('selectNode', params => {
+  selectedNode = params.nodes[0];       // store the id
+  document.getElementById('deleteBtn').disabled = false;
+});
+network.on('deselectNode', () => {
+  selectedNode = null;
+  document.getElementById('deleteBtn').disabled = true;
+});
+
+// 2) Delete button handler
+document.getElementById('deleteBtn').onclick = () => {
+  if (!selectedNode) return;
+  // Remove the node:
+  nodes.remove({ id: selectedNode });
+  // Remove any edges connected to it:
+  edges.forEach(e => {
+    if (e.from === selectedNode || e.to === selectedNode) {
+      edges.remove({ id: e.id });
+    }
+  });
+  // Clear selection & disable delete
+  selectedNode = null;
+  document.getElementById('deleteBtn').disabled = true;
+};
   </script>
 
 </body>
