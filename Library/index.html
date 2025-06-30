@@ -123,18 +123,20 @@
       background: transparent;
     }
     #scrollPopup {
-      position: relative;
-      width: 90%;
-      max-width: 700px;
-      max-height: 90vh;
-      background: url('https://i.imgur.com/G8eHfBb.png') no-repeat center/cover;
-      background-size: cover;
-      padding: 2em;
-      border-radius: 16px;
-      overflow-y: auto;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      color: #1a0f1f;
-      font-family: 'Georgia', serif;
+  position: relative;
+  top: 5%; left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  background: url('main/ancient-parchment.png') no-repeat center center;
+  background-size: cover;
+  padding: 2em;
+  border-radius: 16px;
+  overflow-y: auto;
+  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+  color: #1a0f1f;
+  font-family: 'Georgia', serif;
     }
     #closeScroll {
       position: absolute;
@@ -149,14 +151,16 @@
       padding-right: 1em;
     }
 
-    /* Handheld animation */
-    @keyframes scrollIn {
-      from { transform: translateY(-30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .modal-content {
-      animation: scrollIn 0.5s ease-out;
-    }
+  @keyframes scrollIn {
+  from {
+    transform: translateY(-50px) scaleY(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scaleY(1);
+    opacity: 1;
+  }
+}
   </style>
 </head>
 <body>
