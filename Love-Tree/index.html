@@ -4,70 +4,62 @@
   <meta charset="UTF-8">
   <title>Tree of Love – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
-  <!-- vis-network -->
+
+  <!-- vis-network CSS & JS -->
   <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" />
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
   <style>
     body {
-      font-family: Georgia, serif;
+      margin:0; padding:1em;
       background: #1a0f1f;
       color: #f8e1ff;
-      margin: 0; padding: 1em;
+      font-family: Georgia, serif;
     }
-    header { text-align: center; margin-bottom: 1em; }
-    nav a { margin: 0 1em; color: #b892ff; text-decoration: none; }
+    header { text-align:center; margin-bottom:1em; }
+    nav a, nav button {
+      margin:0 1em;
+      color:#b892ff;
+      text-decoration:none;
+      background:none; border:none;
+      font:inherit; cursor:pointer;
+    }
     #controls {
-      display: flex;
-      justify-content: center;
-      gap: 1em;
-      margin-bottom: 1em;
+      display:flex; justify-content:center; gap:1em; margin-bottom:1em;
     }
-    #controls input {
-      padding: .5em;
-      border-radius: 6px;
-      border: 1px solid #774da9;
-      background: #1e1127;
-      color: #fff3ff;
-      width: 200px;
-    }
-    #controls button {
-      padding: .5em 1em;
-      border: none;
-      border-radius: 6px;
-      background: #774da9;
-      color: white;
-      cursor: pointer;
+    #controls input, #controls select, #controls button {
+      padding:.5em 1em; border-radius:6px;
+      border:1px solid #774da9; background:#2d1b3a; color:#fff3ff;
+      font-size:1em;
     }
     #network {
-      width: 100%;
-      height: 70vh;
-      border: 2px solid #774da9;
-      border-radius: 8px;
-      background: #2d1b3a;
+      width:100%; height:70vh;
+      border:2px solid #774da9; border-radius:8px;
+      background:#2d1b3a;
     }
-    footer { text-align: center; margin-top: 1em; }
-    footer a { color: #b892ff; text-decoration: none; }
-    .locked { filter: brightness(1.2); }
+    footer { text-align:center; margin-top:1em; }
+    footer a { color:#b892ff; text-decoration:none; }
   </style>
 </head>
-
 <body>
+
   <header>
     <nav>
       <a href="/">🌀 Home</a>
-      <a href="/scroll/">✍️ Write a Scroll</a>
-      <a href="/library/">📚 Library</a>
-      <a href="/tree/">🌳 Tree of Love</a>
+      <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/library/">📚 Archive</a>
+      <button onclick="toggleDark()">🌓</button>
     </nav>
     <h1>🌳 Tree of Love</h1>
-    <p>Build & explore your node network of bonds.</p>
+    <p>Click a node to select it, then add new family members below.</p>
   </header>
 
   <div id="controls">
-    <input type="text" id="searchInput" placeholder="Search for a name…">
-    <button id="searchBtn">🔍 Find</button>
-    <button id="toggleLock">🔓 Lock My Node</button>
+    <select id="parentSelect">
+      <option value="">— Select Parent —</option>
+    </select>
+    <input id="childInput" placeholder="New member name…" />
+    <button id="addBtn">➕ Add</button>
   </div>
 
   <div id="network"></div>
@@ -77,63 +69,87 @@
   </footer>
 
   <script>
-    // 1) Sample data. Replace or fetch from your Sheety/DB later.
-    const rawEdges = [
-      { from: 'Alice',   to: 'Bob'   },
-      { from: 'Alice',   to: 'Carol' },
-      { from: 'Bob',     to: 'Dave'  },
-      { from: 'Carol',   to: 'Eve'   },
-      { from: 'Just In Time', to: 'Alice' }  // example user node
-      // …your relationships here…
-    ];
+    // Dark mode toggle
+    function toggleDark() {
+      document.body.classList.toggle('light-mode');
+    }
 
-    // 2) Build nodes+edges sets
-    const nodes = new vis.DataSet();
-    const edges = new vis.DataSet();
-
-    rawEdges.forEach(e => {
-      if (!nodes.get(e.from)) nodes.add({ id: e.from, label: e.from });
-      if (!nodes.get(e.to))   nodes.add({ id: e.to,   label: e.to   });
-      edges.add({ from: e.from, to: e.to });
-    });
-
-    // 3) Create network
+    // 1) Prepare vis-network
     const container = document.getElementById('network');
-    const data = { nodes, edges };
-    const options = {
-      physics: { stabilization: false, barnesHut: { gravitationalConstant: -3000 } },
-      nodes: { shape: 'dot', size: 16, font: { color: '#fff3ff' } },
-      edges: { color: '#cfaaff', width: 2 },
-      interaction: { hover: true, tooltipDelay: 200 }
-    };
-    const network = new vis.Network(container, data, options);
+    const nodes   = new vis.DataSet();
+    const edges   = new vis.DataSet();
+    let network;
 
-    // 4) Center & highlight the user node
-    const userNodeId = 'Just In Time';  // dynamically pick based on logged-in user
-    network.once('afterDrawing', () => {
-      network.selectNodes([userNodeId]);
-      network.focus(userNodeId, { scale:1.5, animation: { duration: 800 } });
-      nodes.update({ id: userNodeId, color: { background:'#ffde7d' }, font:{ color:'#1a0f1f' } });
-    });
+    // 2) Your “root” node (e.g. pulled from login)
+    const userName = prompt("Enter your name to start your Tree of Love") || "Anonymous";
+    nodes.add({ id: userName, label: userName, color:{ background:'#ffde7d', border:'#c4a76f' }});
 
-    // 5) Search functionality
-    document.getElementById('searchBtn').onclick = () => {
-      const term = document.getElementById('searchInput').value.trim();
-      if (!nodes.get(term)) return alert('No node found for "'+term+'".');
-      network.selectNodes([term]);
-      network.focus(term, { scale:1.5, animation: true });
+    // 3) Render function
+    function draw() {
+      // rebuild parent dropdown
+      const parentSelect = document.getElementById('parentSelect');
+      parentSelect.innerHTML = `<option value="">— Select Parent —</option>` +
+        nodes.get().map(n => `<option value="${n.id}">${n.label}</option>`).join('');
+
+      // destroy old if exists
+      if (network) network.destroy();
+
+      // create new
+      network = new vis.Network(container, { nodes, edges }, {
+        layout: {
+          hierarchical: {
+            direction: 'UD',    // up-down
+            sortMethod: 'directed',
+            nodeSpacing: 200,
+            levelSeparation: 150
+          }
+        },
+        interaction: {
+          dragNodes: true,       // allow manual drag
+          dragView: true,        // pan
+          selectConnectedEdges: false
+        },
+        physics: {
+          enabled: false         // no force simulation
+        },
+        nodes: {
+          shape: 'dot',
+          size: 24,
+          font: { color:'#fff3ff', size:14 }
+        },
+        edges: {
+          arrows: { to:{ enabled:false } },
+          color: '#cfaaff',
+          smooth: true,
+          width: 2
+        }
+      });
+
+      // center on user
+      network.once('afterDrawing', () => {
+        network.focus(userName, { scale:1.2, animation:{ duration:600 } });
+      });
+    }
+
+    // 4) Add button handler
+    document.getElementById('addBtn').onclick = () => {
+      const parent = document.getElementById('parentSelect').value;
+      const child  = document.getElementById('childInput').value.trim();
+      if (!parent) return alert("Please select a parent node first.");
+      if (!child)  return alert("Please enter a name for the new member.");
+
+      if (!nodes.get(child)) {
+        nodes.add({ id: child, label: child });
+        edges.add({ from: parent, to: child });
+        draw();
+        document.getElementById('childInput').value = '';
+      } else {
+        alert("That name already exists in your tree.");
+      }
     };
 
-    // 6) Lock/unlock user node
-    let locked = false;
-    const btn = document.getElementById('toggleLock');
-    btn.onclick = () => {
-      locked = !locked;
-      network.setOptions({ physics: { enabled: !locked } });
-      btn.textContent = locked ? '🔒 Unlock My Node' : '🔓 Lock My Node';
-      const cls = locked ? 'locked' : '';
-      document.querySelector(`[data-id="${userNodeId}"]`).className = cls;
-    };
+    // 5) Initial draw
+    draw();
   </script>
 </body>
 </html>
