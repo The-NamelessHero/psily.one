@@ -4,31 +4,19 @@
   <meta charset="UTF-8">
   <title>Tree of Love – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
-  <!-- vis-network -->
   <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" />
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <style>
     body { margin:0; padding:1em; background:#1a0f1f; color:#f8e1ff; font-family:Georgia, serif; }
     header { text-align:center; margin-bottom:1em; }
     nav a { margin:0 1em; color:#b892ff; text-decoration:none; }
-    .controls {
-      text-align:center; margin-bottom:1em;
+    .controls { text-align:center; margin-bottom:1em; }
+    .controls input, .controls select, .controls button {
+      padding:.5em 1em; margin:0 .3em;
+      border-radius:4px; border:1px solid #774da9;
+      background:#1e1127; color:#fff3ff; font:inherit; cursor:pointer;
     }
-    .controls input,
-    .controls select,
-    .controls button {
-      padding:.5em 1em;
-      margin:0 .3em;
-      border-radius:4px;
-      border:1px solid #774da9;
-      background:#1e1127;
-      color:#fff3ff;
-      font:inherit;
-      cursor:pointer;
-    }
-    .controls button:disabled {
-      opacity:.5; cursor:default;
-    }
+    .controls button:disabled { opacity:.5; cursor:default; }
     #network {
       width:100%; height:75vh;
       border:2px solid #774da9; border-radius:8px;
@@ -48,17 +36,17 @@
       <a href="/profile/">👤 Profile</a>
     </nav>
     <h1 id="tree-title">🌳 Tree of Love</h1>
-    <p>Type two names below or click two nodes to add a relationship.</p>
+    <p>Click two nodes or type two names to add a relationship.</p>
   </header>
 
   <div class="controls">
-    <input id="nameA" placeholder="Name A" />
+    <input id="nameA" placeholder="Name A">
     <select id="relationType">
       <option value="child">👶 Child</option>
       <option value="parent">👪 Parent</option>
       <option value="love">❤️ Love/Friend</option>
     </select>
-    <input id="nameB" placeholder="Name B" />
+    <input id="nameB" placeholder="Name B">
     <button id="addBtn">➕ Add Relation</button>
     <button id="deleteBtn" disabled>🗑️ Delete Selected</button>
   </div>
@@ -70,151 +58,146 @@
   </footer>
 
   <script>
-    // ——————————————
-    
-  // 1) New network options: NO hierarchical layout, physics on
-  const options = {
-    physics: {
-      enabled: true,
-      barnesHut: {
-        gravitationalConstant: -3000,
-        springLength: 200,
-        springConstant: 0.05
+    // ——————————————————
+    // Setup user & storage
+    // ——————————————————
+    const params = new URLSearchParams(location.search);
+    const user = params.get('author') || 'Guest';
+    document.getElementById('tree-title').textContent = `🌳 ${user}'s Tree of Love`;
+    const storageKey = `tree-${user}`;
+
+    // ——————————————————
+    // Create DataSets
+    // ——————————————————
+    const nodes = new vis.DataSet();
+    const edges = new vis.DataSet();
+
+    // ——————————————————
+    // Network options: physics + free layout, no arrows
+    // ——————————————————
+    const options = {
+      physics: {
+        enabled: true,
+        barnesHut: { gravitationalConstant:-3000, springConstant:0.05, springLength:200 },
+        stabilization: { iterations:200 }
       },
-      stabilization: { iterations: 200 }
-    },
-    interaction: {
-      dragNodes: true,
-      dragView:  true,
-      zoomView:  true
-    },
-    nodes: {
-      shape: 'box',
-      margin: { top:8, bottom:8, left:12, right:12 },
-      color: { background:'#774da9', border:'#b892ff' },
-      font: { color:'#fff3ff', size:16 }
-    },
-    edges: {
-      arrows: { to:{ enabled:true, scaleFactor:0.5 }},
-      color: { color:'#cfaaff' },
-      width: 2,
-      smooth: { type:'straight' }
-    }
-  };
+      interaction: {
+        dragNodes: true,
+        dragView:  true,
+        zoomView:  true
+      },
+      nodes: {
+        shape: 'box',
+        margin: { top:8, bottom:8, left:12, right:12 },
+        color: { background:'#774da9', border:'#b892ff' },
+        font: { color:'#fff3ff', size:16 }
+      },
+      edges: {
+        arrows: { to:{ enabled:false } },
+        color:  { color:'#cfaaff' },
+        width: 2,
+        smooth: { type:'straight' }
+      }
+    };
+    const network = new vis.Network(
+      document.getElementById('network'),
+      { nodes, edges },
+      options
+    );
 
-  // 2) Build the network
-  const network = new vis.Network(container, { nodes, edges }, options);
+    // ——————————————————
+    // Load saved tree
+    // ——————————————————
+    (function loadTree(){
+      const saved = localStorage.getItem(storageKey);
+      if (!saved) return;
+      const { savedNodes, savedEdges } = JSON.parse(saved);
+      nodes.add(savedNodes);
+      edges.add(savedEdges);
+    })();
 
-  // 3) On every dragEnd, fix that node’s position and save
-  network.on('dragEnd', params => {
-    params.nodes.forEach(id => {
-      const pos = network.getPosition(id);
-      // pin its coordinates
-      nodes.update({ id, x: pos.x, y: pos.y, fixed: { x:true, y:true } });
-    });
-    saveTree();   // your function to persist nodes & edges to localStorage
-  });
-
-  // 4) When you load from localStorage, respect any stored x/y/fixed flags:
-  (function loadSaved(){
-    const saved = localStorage.getItem(storageKey);
-    if (!saved) return;
-    const { savedNodes, savedEdges } = JSON.parse(saved);
-    // add nodes with any x,y,fixed data
-    nodes.add(savedNodes);
-    edges.add(savedEdges);
-  })();
-
-    // ——————————————
-    // 5) Helpers
-    // ——————————————
+    // ——————————————————
+    // Helpers
+    // ——————————————————
     function saveTree(){
-      localStorage.setItem(storageKey,
-        JSON.stringify({
-          savedNodes: nodes.get(),
-          savedEdges: edges.get()
-        }));
+      localStorage.setItem(storageKey, JSON.stringify({
+        savedNodes: nodes.get(),
+        savedEdges: edges.get()
+      }));
     }
     function getNodeId(label){
-      // find existing node by label
-      const found = nodes.get({ filter: n => n.label === label })[0];
+      const found = nodes.get({ filter: n=> n.label===label })[0];
       if (found) return found.id;
-      // otherwise create new
-      const newId = nodes.length === 0
-        ? 1
-        : Math.max(...nodes.get().map(n => n.id)) + 1;
+      const newId = nodes.length===0 ? 1 : Math.max(...nodes.get().map(n=>n.id))+1;
       nodes.add({ id:newId, label });
       return newId;
     }
 
-    // ——————————————
-    // 6) Add Relation
-    // ——————————————
+    // ——————————————————
+    // Add Relation
+    // ——————————————————
     document.getElementById('addBtn').onclick = () => {
       const A = document.getElementById('nameA').value.trim();
       const B = document.getElementById('nameB').value.trim();
       const type = document.getElementById('relationType').value;
-      if (!A || !B) {
-        return alert('Please fill both Name A and Name B.');
-      }
+      if (!A||!B) return alert('Please fill both Name A and Name B.');
+
       const idA = getNodeId(A);
       const idB = getNodeId(B);
 
-      // build edge config
-      let config = { from:idA, to:idB };
-      if (type === 'love') {
-        config.color = { color:'red' };
-        config.dashes = true;
+      // build edge
+      const edge = { from:idA, to:idB };
+      if (type==='love') {
+        edge.color = { color:'red' };
+        edge.dashes = true;
       }
-      // child/parent use default arrows + accent color
-      edges.add(config);
+      edges.add(edge);
 
-      // clear inputs & save
-      document.getElementById('nameA').value = '';
-      document.getElementById('nameB').value = '';
+      // clear & save
+      document.getElementById('nameA').value='';
+      document.getElementById('nameB').value='';
       saveTree();
     };
 
-    // ——————————————
-    // 7) Click-to-fill inputs
-    // ——————————————
-    network.on('click', params => {
-      if (params.nodes.length !== 1) return;
+    // ——————————————————
+    // Click-to-fill
+    // ——————————————————
+    network.on('click', params=>{
+      if (params.nodes.length!==1) return;
       const label = nodes.get(params.nodes[0]).label;
-      const a = document.getElementById('nameA');
-      const b = document.getElementById('nameB');
-      if (!a.value) a.value = label;
-      else if (!b.value) {
-        b.value = label;
-        document.getElementById('addBtn').click();
-      }
+      const a = document.getElementById('nameA'),
+            b = document.getElementById('nameB');
+      if (!a.value)          a.value=label;
+      else if (!b.value) { b.value=label; document.getElementById('addBtn').click(); }
     });
 
-    // ——————————————
-    // 8) Delete Selected
-    // ——————————————
-    let selected = null;
-    network.on('selectNode', params => {
-      selected = params.nodes[0];
-      document.getElementById('deleteBtn').disabled = false;
-    });
-    network.on('deselectNode', () => {
-      selected = null;
-      document.getElementById('deleteBtn').disabled = true;
-    });
+    // ——————————————————
+    // Delete Selected
+    // ——————————————————
+    let selected=null;
+    network.on('selectNode',  p=> { selected=p.nodes[0]; document.getElementById('deleteBtn').disabled=false; });
+    network.on('deselectNode',() => { selected=null; document.getElementById('deleteBtn').disabled=true; });
     document.getElementById('deleteBtn').onclick = () => {
       if (!selected) return;
-      // remove node & incident edges
       nodes.remove(selected);
-      edges.forEach(e => {
-        if (e.from === selected || e.to === selected) {
-          edges.remove(e.id);
-        }
+      edges.get().forEach(e=>{
+        if (e.from===selected||e.to===selected) edges.remove(e.id);
       });
-      selected = null;
-      document.getElementById('deleteBtn').disabled = true;
+      selected=null;
+      document.getElementById('deleteBtn').disabled=true;
       saveTree();
     };
+
+    // ——————————————————
+    // Drag-to-pin + save
+    // ——————————————————
+    network.on('dragEnd', params=> {
+      params.nodes.forEach(id=>{
+        const pos = network.getPosition(id);
+        nodes.update({ id, x:pos.x, y:pos.y, fixed:{x:true,y:true} });
+      });
+      saveTree();
+    });
   </script>
 
 </body>
