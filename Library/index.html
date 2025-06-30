@@ -9,6 +9,8 @@
       --dark-bg: #1a0f1f;
       --light-bg: #d4d4d4;
       --font-color: #f8e1ff;
+      --scroll-bg: #f3e0b2; /* parchment-tone background */
+      --scroll-text: #111;  /* black text on scroll box */
     }
 
     body {
@@ -23,7 +25,10 @@
       color: #1a0f1f;
     }
 
-    header { text-align: center; margin-bottom: 2em; }
+    header {
+      text-align: center;
+      margin-bottom: 2em;
+    }
     nav a, nav button {
       margin: 0 1em;
       color: #b892ff;
@@ -34,10 +39,14 @@
       text-decoration: none;
     }
 
-    .controls { text-align: center; margin-bottom: 2em; }
+    .controls {
+      text-align: center;
+      margin-bottom: 2em;
+    }
     .controls input, .controls select {
-      padding: .5em; margin: 0 .5em; font-size: 1em;
-      border-radius: 6px; border: 1px solid #774da9;
+      padding: .5em; margin: 0 .5em;
+      font-size: 1em; border-radius: 6px;
+      border: 1px solid #774da9;
       background: #1e1127; color: #fff3ff;
     }
 
@@ -74,50 +83,48 @@
       font-style: italic; margin-top: 2em;
     }
 
-   #scrollModal {
-  display: none;       /* toggled to 'flex' by JS */
-  position: fixed; top:0; left:0; right:0; bottom:0;
-  background: rgba(0,0,0,0.8);
-  backdrop-filter: blur(6px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-/* SCROLL CONTAINER – uses contain so we see the full scroll */
-#scrollPopup {
-  width: 60vw;
-  max-width: 800px;
-  height: 80vh;
-  background: url('ancient-parchment.png') no-repeat center center;
-  background-size: contain;  /* scale the whole scroll image inside */
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 0 20px rgba(0,0,0,0.7);
-}
-    #closeScroll {
-      position: absolute; top: 1em; right: 1em;
-      font-size: 1.2em; cursor: pointer; color: #333;
-      background: rgba(255,255,255,0.8); border-radius:50%;
-      width:1.8em; height:1.8em; line-height:1.8em;
-      text-align:center;
+    /* ===== POPUP STYLES ===== */
+    #scrollModal {
+      display: none; /* toggled to 'flex' by JS */
+      position: fixed; top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
     }
-  /* TEXT AREA – inset from the edges of the scroll graphic */
-#scrollContent {
-  flex: 1;
-  overflow-y: auto;
-  /* tweak these margins until your text perfectly sits inside the parchment border */
-  margin: 12% 10% 10% 10%; 
-  color: #1a0f1f;
-  font-family: Georgia, serif;
-  line-height: 1.4;
-}
+    #overlay {
+      position: absolute; width:100%; height:100%;
+      background: transparent;
+    }
+    #scrollPopup {
+      width: 60vw; max-width: 700px; height: 80vh;
+      background-color: var(--scroll-bg);
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      color: var(--scroll-text);
+      overflow-y: auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn .4s ease-out;
+    }
+    #closeScroll {
+      position: absolute; top: .5em; right: .5em;
+      font-size: 1.2em; cursor: pointer; color: #333;
+      background: rgba(255,255,255,0.8);
+      border-radius: 50%; width:1.8em; height:1.8em;
+      line-height:1.8em; text-align:center;
+    }
+    #scrollContent {
+      flex: 1; overflow-y: auto;
+      line-height: 1.4; margin-top: 1em;
+    }
 
-    @keyframes scrollIn {
-      from { transform: translateY(-30px) scaleY(.9); opacity:0; }
-      to   { transform: translateY(0)     scaleY(1);  opacity:1; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1);    }
     }
   </style>
 </head>
@@ -152,7 +159,7 @@
     <div class="loading">Echoing through the archives…</div>
   </section>
 
-  <!-- scroll popup -->
+  <!-- Scroll popup -->
   <div id="scrollModal">
     <div id="overlay"></div>
     <div id="scrollPopup">
@@ -223,7 +230,7 @@
           `https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll/${id}`,
           {
             method: 'PUT',
-            headers: { 'Content-Type':'application/json' },
+            headers: {'Content-Type':'application/json'},
             body: JSON.stringify({ scroll:{ rating: next } })
           }
         );
@@ -242,12 +249,6 @@
       document.getElementById('scrollModal').style.display = 'none';
     };
 
-    // initial load
-    loadScrolls();
-  </script>
-</body>
-</html>
-    // kick off
     loadScrolls();
   </script>
 </body>
