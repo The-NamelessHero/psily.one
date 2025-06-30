@@ -30,8 +30,8 @@
     .controls input,
     .controls select,
     .controls button {
-      margin: 0 .5em;
       padding: .5em;
+      margin: 0 .5em;
       border-radius: 4px;
       border: 1px solid #774da9;
       background: #1e1127;
@@ -39,13 +39,20 @@
       font: inherit;
     }
     #network {
-      width: 100%; height: 75vh;
+      width: 100%;
+      height: 75vh;
       border: 2px solid #774da9;
       border-radius: 8px;
       background: #2d1b3a;
     }
-    footer { text-align: center; margin-top: 1em; }
-    footer a { color: #b892ff; text-decoration: none; }
+    footer {
+      text-align: center;
+      margin-top: 1em;
+    }
+    footer a {
+      color: #b892ff;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -56,19 +63,20 @@
       <a href="/scrolls/">✍️ Write a Scroll</a>
       <a href="/library/">🏛️ Library</a>
       <a href="/profile/">👤 Profile</a>
+      <button onclick="toggleDark()">🌓</button>
     </nav>
     <h1>🌳 Tree of Love</h1>
-    <p>Block-style nodes with red dashed “love” links.</p>
+    <p>Blank slate: add people and link them however you like.</p>
   </header>
 
   <div class="controls">
-    <input id="newName" placeholder="Your Name or Alias" />
+    <input id="nameA" placeholder="Name A" />
     <select id="relationType">
-      <option value="parent">👪 Parent of</option>
-      <option value="child">👶 Child of</option>
-      <option value="love">❤️ Loves</option>
+      <option value="parent">👪 Parent link</option>
+      <option value="child">👶 Child link</option>
+      <option value="love">❤️ Love/friend link</option>
     </select>
-    <input id="targetName" placeholder="Target’s Name or Alias" />
+    <input id="nameB" placeholder="Name B" />
     <button onclick="addRelation()">Add Relation</button>
   </div>
 
@@ -79,31 +87,18 @@
   </footer>
 
   <script>
-    function toggleDark(){
+    // Toggle light/dark
+    function toggleDark() {
       document.body.classList.toggle('light-mode');
     }
 
-  
+    // 1) Start with empty datasets
+    const nodes = new vis.DataSet([]);
+    const edges = new vis.DataSet([]);
 
-    // 2) Edges: no arrows, just straight lines
-    const edgesDS = new vis.DataSet([
-      // family links (solid purple)
-      { from:1, to:3, color:{ color:'#cfaaff' }, dashes:false, width:2 },
-      { from:1, to:4, color:{ color:'#cfaaff' }, dashes:false, width:2 },
-      { from:1, to:5, color:{ color:'#cfaaff' }, dashes:false, width:2 },
-      { from:1, to:6, color:{ color:'#cfaaff' }, dashes:false, width:2 },
-      { from:2, to:3, color:{ color:'#cfaaff' }, dashes:false, width:2 },
-      { from:2, to:4, color:{ color:'#cfaaff' }, dashes:false, width:2 },
-      { from:2, to:5, color:{ color:'#cfaaff' }, dashes:false, width:2 },
-      { from:2, to:6, color:{ color:'#cfaaff' }, dashes:false, width:2 },
-      // love links (red dashed)
-      { from:4, to:7, color:{ color:'red' }, dashes:true, width:3 },
-      { from:4, to:8, color:{ color:'red' }, dashes:true, width:3 }
-    ]);
-
-    // 3) Initialize vis-network with box nodes
+    // 2) Initialize the network
     const container = document.getElementById('network');
-    const data = { nodes: nodesDS, edges: edgesDS };
+    const data = { nodes, edges };
     const options = {
       nodes: {
         shape: 'box',
@@ -128,38 +123,57 @@
     };
     const network = new vis.Network(container, data, options);
 
-    // 4) Dynamic addRelation()
+    // 3) Helper to find-or-create a node by label
+    function getNodeId(label) {
+      // try existing
+      const found = nodes.get({ filter: n => n.label === label })[0];
+      if (found) return found.id;
+      // else create new
+      const newId = nodes.length === 0
+        ? 1
+        : Math.max(...nodes.get().map(n => n.id)) + 1;
+      nodes.add({ id: newId, label });
+      return newId;
+    }
+
+    // 4) Add a new relation (and nodes if needed)
     function addRelation() {
-      const name = document.getElementById('newName').value.trim();
-      const target = document.getElementById('targetName').value.trim();
+      const A = document.getElementById('nameA').value.trim();
+      const B = document.getElementById('nameB').value.trim();
       const type = document.getElementById('relationType').value;
-      if (!name || !target) {
-        return alert('Please fill in both names.');
+      if (!A || !B) {
+        return alert('Please enter both names.');
       }
 
-      function getNodeId(label) {
-        const existing = nodesDS.get().find(n => n.label === label);
-        if (existing) return existing.id;
-        const newId = Math.max(...nodesDS.get().map(n => n.id)) + 1;
-        nodesDS.add({ id: newId, label: '' });
-        return newId;
+      const idA = getNodeId(A);
+      const idB = getNodeId(B);
+
+      let edgeConfig;
+      if (type === 'child') {
+        // Child link: solid grey
+        edgeConfig = {
+          from: idA,
+          to: idB,
+          color: { color: 'grey' },
+          dashes: false,
+          width: 2
+        };
+      } else {
+        // Parent or Love link: red dashed
+        edgeConfig = {
+          from: idA,
+          to: idB,
+          color: { color: 'red' },
+          dashes: true,
+          width: 2
+        };
       }
 
-      const sourceId = getNodeId(name);
-      const targetId = getNodeId(target);
+      edges.add(edgeConfig);
 
-      let edge;
-      if (type === 'parent') {
-        edge = { from: sourceId, to: targetId, color:{color:'#cfaaff'}, dashes:false, width:2 };
-      } else if (type === 'child') {
-        edge = { from: sourceId, to: targetId, color:{color:'#cfaaff'}, dashes:false, width:2 };
-      } else { // love
-        edge = { from: sourceId, to: targetId, color:{color:'red'}, dashes:true, width:3 };
-      }
-
-      edgesDS.add(edge);
-      document.getElementById('newName').value = '';
-      document.getElementById('targetName').value = '';
+      // clear inputs
+      document.getElementById('nameA').value = '';
+      document.getElementById('nameB').value = '';
     }
   </script>
 
