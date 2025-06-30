@@ -74,36 +74,29 @@
       font-style: italic; margin-top: 2em;
     }
 
-    /* ==== POPUP STYLES ==== */
-    #scrollModal {
-      display: none; /* toggled to 'flex' via JS */
-      position: fixed; top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(6px);
-      justify-content: center;  /* center horizontally */
-      align-items: center;      /* center vertically */
-      z-index: 1000;
-    }
-    #overlay {
-      position: absolute; width:100%; height:100%;
-      background: transparent;
-    }
-    #scrollPopup {
-      width: 60vw;               /* adapt width to viewport */
-      max-width: 800px;
-      height: 80vh;
-      background: url('ancient-parchment.png') no-repeat center center;
-      background-size: cover;    /* fill container with parchment */
-      padding: 3em 2em;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      overflow-y: auto;          /* scroll text inside */
-      display: flex;
-      flex-direction: column;
-      font-family: Georgia, serif;
-      color: #1a0f1f;            /* dark text on parchment */
-      animation: scrollIn .5s ease-out;
-      position: relative;
-    }
+   #scrollModal {
+  display: none;       /* toggled to 'flex' by JS */
+  position: fixed; top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* SCROLL CONTAINER – uses contain so we see the full scroll */
+#scrollPopup {
+  width: 60vw;
+  max-width: 800px;
+  height: 80vh;
+  background: url('ancient-parchment.png') no-repeat center center;
+  background-size: contain;  /* scale the whole scroll image inside */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+}
     #closeScroll {
       position: absolute; top: 1em; right: 1em;
       font-size: 1.2em; cursor: pointer; color: #333;
@@ -111,9 +104,16 @@
       width:1.8em; height:1.8em; line-height:1.8em;
       text-align:center;
     }
-    #scrollContent {
-      flex: 1; overflow-y: auto;
-    }
+  /* TEXT AREA – inset from the edges of the scroll graphic */
+#scrollContent {
+  flex: 1;
+  overflow-y: auto;
+  /* tweak these margins until your text perfectly sits inside the parchment border */
+  margin: 12% 10% 10% 10%; 
+  color: #1a0f1f;
+  font-family: Georgia, serif;
+  line-height: 1.4;
+}
 
     @keyframes scrollIn {
       from { transform: translateY(-30px) scaleY(.9); opacity:0; }
