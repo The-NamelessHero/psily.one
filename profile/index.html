@@ -4,17 +4,40 @@
   <meta charset="UTF-8">
   <title>Profile – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
+
+  <!-- Netlify Identity -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <!-- Sheety endpoint base (replace YOUR_TOKEN) -->
+  <script>
+    const SHEETY_BASE = 'https://api.sheety.co/YOUR_TOKEN/psily';
+  </script>
+
   <style>
-    body { font-family: Georgia, serif; background: #1a0f1f; color: #f8e1ff; margin:0; padding:1em; }
+    body { font-family:Georgia, serif; background:#1a0f1f; color:#f8e1ff; margin:0; padding:1em; }
     header { text-align:center; margin-bottom:1em; }
     nav a { margin:0 1em; color:#b892ff; text-decoration:none; }
-    .search { text-align:center; margin-bottom:2em; }
-    .search input { padding:0.5em; width:200px; border-radius:6px; border:1px solid #774da9; background:#1e1127; color:#fff3ff; }
-    .search button { padding:0.5em 1em; margin-left:0.5em; border:none; border-radius:6px; background:#774da9; color:#fff; cursor:pointer; }
-    #scrolls { max-width:700px; margin:0 auto; }
+    button {  
+      padding:0.5em 1em; margin: 0.5em 0; 
+      background:#774da9; color:white; border:none; border-radius:6px; cursor:pointer;
+    }
+    .hidden { display:none; }
+    .container { max-width:700px; margin:0 auto; }
+    label { display:block; margin: 1em 0 0.5em; }
+    input[type="text"], textarea {
+      width:100%; padding:0.5em; border-radius:6px; border:1px solid #774da9;
+      background:#1e1127; color:#fff3ff;
+    }
+    textarea { resize:vertical; min-height:80px; }
+    .avatar-preview {
+      margin-top:0.5em; width:96px; height:96px; border-radius:50%;
+      object-fit:cover; border:2px solid #b892ff;
+    }
+    section { margin-top:2em; }
+    h2 { margin-top:2em; font-size:1.5em; border-bottom:1px solid #774da9; padding-bottom:0.3em; }
     .scroll { background:#2d1b3a; border:2px solid #774da9; border-radius:8px; padding:1em; margin-bottom:1em; }
-    .scroll p { margin:0.5em 0; }
     .scroll .author { font-size:0.9em; color:#cfaaff; }
+    .search { margin-top:1em; }
+    .search input { width:60%; }
   </style>
 </head>
 <body>
@@ -23,65 +46,164 @@
     <nav>
       <a href="/">🌀 Home</a>
       <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/tree/">🌳 Tree of Love</a>
       <a href="/library/">🏛️ Library</a>
     </nav>
-    <h1>Your Personal Archive</h1>
+    <h1>Your Profile</h1>
   </header>
 
-  <div class="search">
-    <input id="authorInput" type="text" placeholder="Enter a user name…">
-    <button id="searchBtn">Search</button>
+  <div class="container">
+    <!-- Login/Signup -->
+    <div id="loginSection">
+      <button id="loginBtn">🔑 Log In / Sign Up</button>
+    </div>
+
+    <!-- Profile Editor -->
+    <div id="profileSection" class="hidden">
+      <h2>Edit Your Profile</h2>
+      <form id="profileForm">
+        <label for="alias">Alias</label>
+        <input type="text" id="alias" required />
+
+        <label for="about">About Me</label>
+        <textarea id="about" placeholder="Tell us about yourself..."></textarea>
+
+        <label for="avatarUrl">Avatar URL</label>
+        <input type="text" id="avatarUrl" placeholder="https://example.com/me.jpg" />
+        <img id="avatarPreview" class="avatar-preview hidden" />
+
+        <button type="submit">💾 Save Profile</button>
+      </form>
+    </div>
+
+    <!-- Personal Scroll Archive -->
+    <div id="myScrollsSection" class="hidden">
+      <h2>Your Scrolls</h2>
+      <div id="myScrolls"><p style="color:#bbb">Loading…</p></div>
+    </div>
+
+    <!-- Search Others -->
+    <div id="searchSection" class="hidden">
+      <h2>Search Other Users</h2>
+      <div class="search">
+        <input id="searchInput" placeholder="Enter alias…" />
+        <button id="searchBtn">🔍 Search</button>
+      </div>
+      <div id="otherScrolls"></div>
+    </div>
   </div>
 
-  <section id="scrolls">
-    <p style="text-align:center;color:#bbb;">Search for a user to see their scrolls.</p>
-  </section>
+  <footer class="container">
+    <p><a href="/">← Back to Psily.one</a></p>
+  </footer>
 
   <script>
-    const scrollsEl = document.getElementById('scrolls');
-    const input = document.getElementById('authorInput');
-    document.getElementById('searchBtn').onclick = () => {
-      const author = input.value.trim();
-      if (!author) return alert('Please enter a name.');
-      loadScrollsFor(author);
-    };
+    // 1) Initialize Netlify Identity
+    const identity = netlifyIdentity.init();
+    const loginBtn  = document.getElementById('loginBtn');
+    const loginSec  = document.getElementById('loginSection');
+    const profileSec= document.getElementById('profileSection');
+    const mySec     = document.getElementById('myScrollsSection');
+    const searchSec = document.getElementById('searchSection');
 
-    // Auto-run if ?author=... is present
-    const params = new URLSearchParams(location.search);
-    if (params.has('author')) {
-      const author = params.get('author');
-      input.value = author;
-      loadScrollsFor(author);
-    }
+    loginBtn.onclick = () => identity.open();
 
-    async function loadScrollsFor(author) {
-      scrollsEl.innerHTML = '<p style="text-align:center;color:#bbb;">Loading scrolls…</p>';
-      try {
-        const res = await fetch('https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll');
-        const data = await res.json();
-        const all = data.scroll || [];
-        const filtered = all.filter(s => (s.author||'Anonymous').toLowerCase() === author.toLowerCase());
-        if (filtered.length === 0) {
-          scrollsEl.innerHTML = `<p style="text-align:center;color:#bbb;">No scrolls found for “${author}.”</p>`;
-          return;
-        }
-        // display them newest first
-        scrollsEl.innerHTML = '';
-        filtered.reverse().forEach(s => {
-          const div = document.createElement('div');
-          div.className = 'scroll';
-          div.innerHTML = `
-            <p>${s.scroll}</p>
-            <div class="author">– ${s.author || 'Anonymous'}</div>
-          `;
-          scrollsEl.appendChild(div);
-        });
-      } catch (err) {
-        scrollsEl.innerHTML = `<p style="text-align:center;color:#f88;">Failed to load. Try again later.</p>`;
-        console.error(err);
+    identity.on('login', user => {
+      loginSec.classList.add('hidden');
+      profileSec.classList.remove('hidden');
+      mySec.classList.remove('hidden');
+      searchSec.classList.remove('hidden');
+      loadProfile(user);
+      loadMyScrolls(user);
+    });
+
+    // 2) Profile CRUD via Sheety
+    let profileId = null;
+    async function loadProfile(user) {
+      const res = await fetch(`${SHEETY_BASE}/profiles`);
+      const all  = (await res.json()).profiles;
+      const me   = all.find(p => p.email === user.email);
+      if (me) {
+        profileId = me.id;
+        document.getElementById('alias').value     = me.alias;
+        document.getElementById('about').value     = me.about;
+        document.getElementById('avatarUrl').value = me.avatarUrl;
+        showAvatar(me.avatarUrl);
       }
     }
-  </script>
 
+    function showAvatar(url) {
+      const img = document.getElementById('avatarPreview');
+      if (url) {
+        img.src = url;
+        img.classList.remove('hidden');
+      } else img.classList.add('hidden');
+    }
+
+    document.getElementById('avatarUrl').oninput = e => showAvatar(e.target.value);
+
+    document.getElementById('profileForm').onsubmit = async e => {
+      e.preventDefault();
+      const body = {
+        profile: {
+          email:      identity.currentUser()?.email,
+          alias:      document.getElementById('alias').value.trim(),
+          about:      document.getElementById('about').value.trim(),
+          avatarUrl:  document.getElementById('avatarUrl').value.trim()
+        }
+      };
+      const url = profileId
+        ? `${SHEETY_BASE}/profiles/${profileId}`
+        : `${SHEETY_BASE}/profiles`;
+      const method = profileId ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        profileId = data.profile.id;
+        alert('Profile saved!');
+      } else {
+        alert('Failed to save profile.');
+      }
+    };
+
+    // 3) Load “My Scrolls”
+    async function loadMyScrolls(user) {
+      const alias = document.getElementById('alias').value.trim();
+      const res   = await fetch(`${SHEETY_BASE}/scroll`);
+      const all   = (await res.json()).scroll;
+      const mine  = all.filter(s => (s.author||'').toLowerCase() === alias.toLowerCase());
+      const container = document.getElementById('myScrolls');
+      if (!mine.length) container.innerHTML = '<p style="color:#bbb">No scrolls yet.</p>';
+      else {
+        container.innerHTML = '';
+        mine.reverse().forEach(s => {
+          const d = document.createElement('div');
+          d.className = 'scroll';
+          d.innerHTML = `<p>${s.scroll}</p><div class="author">– ${s.author}</div>`;
+          container.appendChild(d);
+        });
+      }
+    }
+
+    // 4) Search others
+    document.getElementById('searchBtn').onclick = async () => {
+      const a = document.getElementById('searchInput').value.trim();
+      if (!a) return alert('Enter an alias');
+      const res = await fetch(`${SHEETY_BASE}/scroll`);
+      const all = (await res.json()).scroll;
+      const theirs = all.filter(s => (s.author||'').toLowerCase() === a.toLowerCase());
+      const c = document.getElementById('otherScrolls');
+      c.innerHTML = `<h3>Scrolls by ${a}</h3>`;
+      if (!theirs.length) c.innerHTML += '<p style="color:#bbb">None found.</p>';
+      else theirs.reverse().forEach(s => {
+        const d = document.createElement('div');
+        d.className = 'scroll';
+        d.innerHTML = `<p>${s.scroll}</p><div class="author">– ${s.author}</div>`;
+        c.appendChild(d);
+      });
+    };
+  </script>
 </body>
 </html>
