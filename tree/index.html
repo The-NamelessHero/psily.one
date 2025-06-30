@@ -68,172 +68,96 @@
   const SHEETY_BASE = 'https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/tree';
   // ————————————————————————————————
 
-  let userEmail = null;
-  let canEdit   = false;
-  let locked    = false;
-  let selected  = null;
+ <script>
+  // buttons
+  const addBtn       = document.getElementById('addBtn');
+  const deleteBtn    = document.getElementById('deleteBtn');
+  const toggleLockBtn= document.getElementById('toggleLock');
 
-  // Initialize Netlify Identity
+  // state
+  let canEdit = false;
+  let locked  = false;
+  let selectedNode = null;
+
+  // Netlify identity (your existing code)
   netlifyIdentity.init();
-  const authBtn = document.getElementById('authBtn');
-  authBtn.onclick = () => {
-    if (!userEmail) netlifyIdentity.open();
-    else           netlifyIdentity.logout();
-  };
   netlifyIdentity.on('login', user => {
+    canEdit = true;
     userEmail = user.email;
-    canEdit   = true;
     authBtn.textContent = '🚪 Log Out';
     loadTree();
   });
   netlifyIdentity.on('logout', () => {
-    userEmail = null;
-    canEdit   = false;
-    authBtn.textContent = '🔑 Log In';
+    canEdit = false;
     nodes.clear(); edges.clear();
+    authBtn.textContent = '🔑 Log In';
     document.getElementById('tree-title').textContent = '🌳 Your Tree of Love';
   });
 
-  // Setup Vis.js
-  const nodes   = new vis.DataSet();
-  const edges   = new vis.DataSet();
-  const container = document.getElementById('network');
-  const network = new vis.Network(container, { nodes, edges }, {
-    nodes: {
-      shape: 'box',
-      margin: 10,
-      color: { background:'#774da9', border:'#b892ff', highlight:{background:'#b892ff'} },
-      font: { color:'#fff3ff' }
-    },
-    edges: {
-      arrows: false,
-      smooth: { type:'straight' }
-    },
-    interaction: { dragNodes:true, zoomView:true },
-    physics: { enabled: true, stabilization:{ iterations:200 } }
+  // LOCK / UNLOCK handler
+  toggleLockBtn.addEventListener('click', () => {
+    locked = !locked;
+    // physics on/off
+    network.setOptions({ physics: { enabled: !locked } });
+    // disable/enable buttons
+    addBtn.disabled    = locked || !canEdit;
+    deleteBtn.disabled = locked || !canEdit || !selectedNode;
+    // update label
+    toggleLockBtn.textContent = locked 
+      ? '🔓 Edit Mode' 
+      : '🔒 View Only';
   });
 
-  // Toggle edit/view mode
-  document.getElementById('toggleLock').onclick = () => {
-    locked = !locked; 
-    network.setOptions({ physics:{ enabled: !locked } });
-    [ 'addBtn','deleteBtn' ].forEach(id => {
-      document.getElementById(id).disabled = locked || !canEdit;
-    });
-    document.getElementById('toggleLock').textContent = locked ? '🔓 Edit Mode' : '🔒 View Only';
-  };
-
-  // Helpers
-  function getNodeId(label) {
-    let found = nodes.get({ filter: n=>n.label===label })[0];
-    if (found) return found.id;
-    let id = nodes.length === 0 ? 1 : Math.max(...nodes.get().map(n=>n.id)) + 1;
-    nodes.add({ id, label });
-    return id;
-  }
-
-  function saveRelation(parent, child, type, id=null) {
-    // POST new or PUT existing
-    const payload = { tree: { parent, child, type, userEmail } };
-    let url = SHEETY_BASE;
-    let method = 'POST';
-    if (id) { url += `/${id}`; method = 'PUT'; payload.tree.id = id; }
-    return fetch(url, {
-      method, headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    }).then(r=>r.json());
-  }
-
-  async function loadTree() {
-    if (!canEdit) return;
-    // fetch only this user’s tree
-    const res = await fetch(`${SHEETY_BASE}?userEmail=${encodeURIComponent(userEmail)}`);
-    const rows = (await res.json()).tree || [];
-    nodes.clear(); edges.clear();
-    rows.forEach(r => {
-      // add nodes
-      const pid = getNodeId(r.parent);
-      const cid = getNodeId(r.child);
-      // add edge
-      edges.add({
-        id: r.id,
-        from: pid,
-        to: cid,
-        dashes: r.type==='love',
-        color: { color: r.type==='love' ? 'red' : 'grey' },
-        width: 2
-      });
-    });
-    document.getElementById('tree-title').textContent = `🌳 ${userEmail}'s Tree of Love`;
-  }
-
-  // Add Relation
-  document.getElementById('addBtn').onclick = async () => {
-    if (!canEdit || locked) return alert('Log in and unlock to edit.');
+  // ADD RELATION handler
+  addBtn.addEventListener('click', async () => {
+    if (!canEdit)  return alert('Log in to edit your tree!');
+    if (locked)    return alert('Unlock to edit your tree!');
     const A = document.getElementById('nameA').value.trim();
     const B = document.getElementById('nameB').value.trim();
     const type = document.getElementById('relationType').value;
-    if (!A||!B) return alert('Fill both names.');
-    const { tree } = await saveRelation(A, B, type);
-    // reflect immediately
-    const pid = getNodeId(tree.parent), cid = getNodeId(tree.child);
-    edges.add({
-      id: tree.id, from: pid, to: cid,
-      dashes: tree.type==='love',
-      color:{ color: tree.type==='love'?'red':'grey' },
-      width:2
-    });
-    [ 'nameA','nameB' ].forEach(id=>document.getElementById(id).value='');
-  };
+    if (!A || !B) return alert('Please fill both Name A and Name B.');
+    // your saveRelation() + immediate draw logic here...
+    await saveRelation(A, B, type);
+    document.getElementById('nameA').value = '';
+    document.getElementById('nameB').value = '';
+  });
 
-  // Click to delete
-  let sel = null;
-  network.on('selectNode', ({ nodes: [nid] }) => {
-    sel = nid;
-    document.getElementById('deleteBtn').disabled = false;
+  // SELECT / DELETE handler
+  network.on('selectNode', ({ nodes:[nid] }) => {
+    selectedNode = nid;
+    deleteBtn.disabled = locked || !canEdit ? true : false;
   });
   network.on('deselectNode', () => {
-    sel = null;
-    document.getElementById('deleteBtn').disabled = true;
+    selectedNode = null;
+    deleteBtn.disabled = true;
   });
-  document.getElementById('deleteBtn').onclick = async () => {
-    if (!canEdit||locked||!sel) return;
-    // remove all edges touching sel
-    const toRemove = edges.get().filter(e => e.from===sel||e.to===sel);
-    // delete each from Sheety
-    await Promise.all(toRemove.map(e =>
-      fetch(`${SHEETY_BASE}/${e.id}`, { method:'DELETE' })
-    ));
-    edges.remove(toRemove.map(e=>e.id));
-    nodes.remove(sel);
-    sel = null;
-    document.getElementById('deleteBtn').disabled = true;
-  };
+  deleteBtn.addEventListener('click', async () => {
+    if (!canEdit || locked || !selectedNode) return;
+    // call DELETE on Sheety then remove
+    await deleteRelation(selectedNode);
+    nodes.remove(selectedNode);
+    edges.get().filter(e=>e.from===selectedNode||e.to===selectedNode)
+                .forEach(e=>edges.remove(e.id));
+    selectedNode = null;
+    deleteBtn.disabled = true;
+  });
 
-  // Click‐to‐link helper
+  // click-to-link (unchanged)
   network.on('click', params => {
-    if (!canEdit||locked) return;
-    if (params.nodes.length===1) {
+    if (!canEdit || locked) return;
+    if (params.nodes.length === 1) {
       const lbl = nodes.get(params.nodes[0]).label;
-      const A = document.getElementById('nameA'),
-            B = document.getElementById('nameB');
-      if (!A.value) A.value = lbl;
-      else if (!B.value) { B.value = lbl; document.getElementById('addBtn').click(); }
+      const a = document.getElementById('nameA');
+      const b = document.getElementById('nameB');
+      if (!a.value) a.value = lbl;
+      else if (!b.value) {
+        b.value = lbl;
+        addBtn.click();
+      }
     }
   });
+</script>
 
-  // On load, if already logged in
-  if (netlifyIdentity.currentUser()) {
-    netlifyIdentity.on('init', user => {
-      if (user) {
-        userEmail = user.email;
-        canEdit   = true;
-        authBtn.textContent = '🚪 Log Out';
-        loadTree();
-      }
-    });
-  }
-  </script>
 
 </body>
 </html>
