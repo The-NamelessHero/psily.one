@@ -137,8 +137,10 @@
   });
 
   if (response.ok) {
-    alert("🌌 Your scroll has entered the void.");
-    this.reset();
+   alert("🌌 Your scroll has entered the void.\n\nYou can see all your scrolls on your profile page.");
+     // redirect to their personal archive
+    const authorParam = encodeURIComponent(author || "Anonymous");
+     window.location.href = `/profile/?author=${authorParam}`;
   } else {
     const errorText = await response.text();
     alert("⚠️ The void rejected this scroll. Details:\n\n" + errorText);
