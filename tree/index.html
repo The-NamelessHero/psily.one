@@ -71,71 +71,59 @@
 
   <script>
     // ——————————————
-    // 1) Setup user & storage key
-    // ——————————————
-    const params = new URLSearchParams(location.search);
-    const currentUser = params.get('author') || 'Guest';
-    document.getElementById('tree-title')
-      .textContent = `🌳 ${currentUser}'s Tree of Love`;
-    const storageKey = `tree-${currentUser}`;
+    
+  // 1) New network options: NO hierarchical layout, physics on
+  const options = {
+    physics: {
+      enabled: true,
+      barnesHut: {
+        gravitationalConstant: -3000,
+        springLength: 200,
+        springConstant: 0.05
+      },
+      stabilization: { iterations: 200 }
+    },
+    interaction: {
+      dragNodes: true,
+      dragView:  true,
+      zoomView:  true
+    },
+    nodes: {
+      shape: 'box',
+      margin: { top:8, bottom:8, left:12, right:12 },
+      color: { background:'#774da9', border:'#b892ff' },
+      font: { color:'#fff3ff', size:16 }
+    },
+    edges: {
+      arrows: { to:{ enabled:true, scaleFactor:0.5 }},
+      color: { color:'#cfaaff' },
+      width: 2,
+      smooth: { type:'straight' }
+    }
+  };
 
-    // ——————————————
-    // 2) vis-network datasets
-    // ——————————————
-    const nodes = new vis.DataSet();
-    const edges = new vis.DataSet();
+  // 2) Build the network
+  const network = new vis.Network(container, { nodes, edges }, options);
 
-    // ——————————————
-    // 3) Create the network once
-    // ——————————————
-    const container = document.getElementById('network');
-    const options = {
-      layout: {
-        hierarchical: {
-          enabled: true,
-          direction: 'UD',
-          sortMethod: 'directed',
-          levelSeparation: 200,
-          nodeSpacing: 300,
-          blockShifting: false,
-          edgeMinimization: false,
-          parentCentralization: false
-        }
-      },
-      interaction: {
-        dragNodes: true,
-        dragView: true,
-        zoomView: true
-      },
-      physics: {
-        enabled: true,
-        stabilization: { iterations: 500 }
-      },
-      nodes: {
-        shape: 'box',
-        margin: { top:8, bottom:8, left:12, right:12 },
-        color: { background:'#774da9', border:'#b892ff' },
-        font: { color:'#fff3ff', size:16 }
-      },
-      edges: {
-        arrows: { to:{ enabled:true, scaleFactor:0.5 }},
-        color: { color:'#cfaaff' },
-        width: 2,
-        smooth: { type:'straight' }
-      }
-    };
-    const network = new vis.Network(container, { nodes, edges }, options);
+  // 3) On every dragEnd, fix that node’s position and save
+  network.on('dragEnd', params => {
+    params.nodes.forEach(id => {
+      const pos = network.getPosition(id);
+      // pin its coordinates
+      nodes.update({ id, x: pos.x, y: pos.y, fixed: { x:true, y:true } });
+    });
+    saveTree();   // your function to persist nodes & edges to localStorage
+  });
 
-    // ——————————————
-    // 4) Restore from localStorage
-    // ——————————————
-    (function loadSaved(){
-      const saved = localStorage.getItem(storageKey);
-      if (!saved) return;
-      const { savedNodes, savedEdges } = JSON.parse(saved);
-      nodes.add(savedNodes);
-      edges.add(savedEdges);
-    })();
+  // 4) When you load from localStorage, respect any stored x/y/fixed flags:
+  (function loadSaved(){
+    const saved = localStorage.getItem(storageKey);
+    if (!saved) return;
+    const { savedNodes, savedEdges } = JSON.parse(saved);
+    // add nodes with any x,y,fixed data
+    nodes.add(savedNodes);
+    edges.add(savedEdges);
+  })();
 
     // ——————————————
     // 5) Helpers
