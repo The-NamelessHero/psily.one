@@ -2,275 +2,138 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>The Library – Psily.one</title>
+  <title>Tree of Love – Psily.one</title>
   <link rel="stylesheet" href="../style.css">
-  <style>
-    :root {
-      --dark-bg: #1a0f1f;
-      --light-bg: #d4d4d4;
-      --font-color: #f8e1ff;
-      --scroll-bg: #ddd7ab;
-      --scroll-text: #111;
-    }
+  <!-- vis-network -->
+  <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
+  <style>
     body {
       font-family: Georgia, serif;
+      background: #1a0f1f;
+      color: #f8e1ff;
       margin: 0; padding: 1em;
-      background-color: var(--dark-bg);
-      color: var(--font-color);
-      transition: background-color .3s, color .3s;
     }
-    body.light-mode {
-      background-color: var(--light-bg);
-      color: #1a0f1f;
+    header { text-align: center; margin-bottom: 1em; }
+    nav a { margin: 0 1em; color: #b892ff; text-decoration: none; }
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin-bottom: 1em;
     }
-
-    header { text-align: center; margin-bottom: 2em; }
-    nav a, nav button {
-      margin: 0 1em; color: #b892ff;
-      background: none; border: none; font: inherit;
-      cursor: pointer; text-decoration: none;
-    }
-
-    .controls { text-align: center; margin-bottom: 2em; }
-    .controls input, .controls select {
-      padding: .5em; margin: 0 .5em; font-size: 1em;
-      border-radius: 6px; border: 1px solid #774da9;
-      background: #1e1127; color: #fff3ff;
-    }
-
-    .scroll {
-      position: relative;
-      background: #2d1b3a;
-      border: 2px solid #774da9;
-      border-radius: 10px;
-      padding: 1.5em; margin-bottom: 1.5em;
-      box-shadow: 0 0 10px rgba(255,200,255,0.1);
-      cursor: pointer;
-    }
-    .scroll .rating {
-      position: absolute; top: 1em; right: 1em;
-      color: #aaa; font-size: .8em;
-    }
-    .scroll h3 {
-      margin: 0 0 .5em;
+    #controls input {
+      padding: .5em;
+      border-radius: 6px;
+      border: 1px solid #774da9;
+      background: #1e1127;
       color: #fff3ff;
-      font-size: 1.2em;
+      width: 200px;
     }
-    .scroll .author {
-      margin-top: 1em; font-size: .9em; color: #cfaaff;
-    }
-    .scroll .reactions {
-      margin-top: .8em; text-align: center;
-    }
-    .scroll .reactions button {
-      margin: 0 .2em; padding: .4em .6em;
-      font-size: 1em; border: none; border-radius: 6px;
+    #controls button {
+      padding: .5em 1em;
+      border: none;
+      border-radius: 6px;
+      background: #774da9;
+      color: white;
       cursor: pointer;
     }
-    .scroll .reactions button:disabled {
-      opacity: .4; cursor: default;
+    #network {
+      width: 100%;
+      height: 70vh;
+      border: 2px solid #774da9;
+      border-radius: 8px;
+      background: #2d1b3a;
     }
-
-    .loading {
-      text-align: center; color: #bbb;
-      font-style: italic; margin-top: 2em;
-    }
-
-    /* POPUP */
-    #scrollModal {
-      display: none; position: fixed; top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
-      justify-content: center; align-items: center; z-index: 1000;
-    }
-    #overlay { position: absolute; width:100%; height:100%; }
-    #scrollPopup {
-      width: 60vw; max-width: 700px; height: 80vh;
-      background-color: var(--scroll-bg);
-      padding: 2em; border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      color: var(--scroll-text);
-      overflow-y: auto; position: relative;
-      display: flex; flex-direction: column;
-      animation: fadeIn .4s ease-out;
-    }
-    #closeScroll {
-      position: absolute; top: .5em; right: .5em;
-      font-size: 1.2em; cursor: pointer; color: #333;
-      background: rgba(255,255,255,0.8); border-radius:50%;
-      width:1.8em; height:1.8em; line-height:1.8em;
-      text-align:center;
-    }
-    #scrollContent {
-      flex: 1; overflow-y: auto; margin-top: 1em; line-height:1.4;
-    }
-    #scrollPopup h2 {
-      margin: 0 0 .5em;
-      font-size: 1.5em;
-      color: #1a0f1f;
-    }
-
-    @keyframes fadeIn {
-      from { opacity:0; transform: scale(0.95); }
-      to   { opacity:1; transform: scale(1);    }
-    }
-    /* Light-mode overrides */
-body.light-mode {
-  --scroll-card-bg: #f3e0b2;
-  --scroll-card-text: #1a0f1f;
-  --input-bg:      #ffffff;
-  --input-text:    #000000;
-  --input-border:  #cccccc;
-}
-
-body.light-mode .scroll {
-  background-color: var(--scroll-card-bg);
-  border-color:     #c4b091;
-}
-
-body.light-mode .scroll p,
-body.light-mode .scroll h3,
-body.light-mode .scroll .author,
-body.light-mode .scroll .rating {
-  color: var(--scroll-card-text);
-}
-
-body.light-mode .controls input,
-body.light-mode .controls select {
-  background-color: var(--input-bg);
-  color:            var(--input-text);
-  border-color:     var(--input-border);
-}
-
-/* If you ever need the popup text darker on light, override it too */
-body.light-mode #scrollPopup {
-  color: var(--scroll-card-text);
-}
+    footer { text-align: center; margin-top: 1em; }
+    footer a { color: #b892ff; text-decoration: none; }
+    .locked { filter: brightness(1.2); }
   </style>
 </head>
+
 <body>
-
-  <audio autoplay loop>
-    <source src="https://cdn.pixabay.com/audio/2022/03/04/audio_14b18bcb15.mp3" type="audio/mpeg">
-  </audio>
-
   <header>
     <nav>
       <a href="/">🌀 Home</a>
       <a href="/scroll/">✍️ Write a Scroll</a>
+      <a href="/library/">📚 Library</a>
       <a href="/tree/">🌳 Tree of Love</a>
-      <button onclick="toggleDarkMode()">🌓</button>
     </nav>
-    <h1>📚 The Archive</h1>
-    <p>Where the echoes of the void are preserved.</p>
+    <h1>🌳 Tree of Love</h1>
+    <p>Build & explore your node network of bonds.</p>
   </header>
 
-  <section class="controls">
-    <input type="text" id="search" placeholder="Search scrolls…">
-    <select id="sort">
-      <option value="latest">Latest</option>
-      <option value="rating">Rating</option>
-      <option value="length">Length</option>
-    </select>
-  </section>
-
-  <section id="scrolls">
-    <div class="loading">Echoing through the archives…</div>
-  </section>
-
-  <!-- Scroll popup -->
-  <div id="scrollModal">
-    <div id="overlay"></div>
-    <div id="scrollPopup">
-      <span id="closeScroll">✖</span>
-      <div id="scrollContent"></div>
-    </div>
+  <div id="controls">
+    <input type="text" id="searchInput" placeholder="Search for a name…">
+    <button id="searchBtn">🔍 Find</button>
+    <button id="toggleLock">🔓 Lock My Node</button>
   </div>
 
+  <div id="network"></div>
+
+  <footer>
+    <a href="/">← Back to Psily.one</a>
+  </footer>
+
   <script>
-    function toggleDarkMode() {
-      document.body.classList.toggle('light-mode');
-    }
+    // 1) Sample data. Replace or fetch from your Sheety/DB later.
+    const rawEdges = [
+      { from: 'Alice',   to: 'Bob'   },
+      { from: 'Alice',   to: 'Carol' },
+      { from: 'Bob',     to: 'Dave'  },
+      { from: 'Carol',   to: 'Eve'   },
+      { from: 'Just In Time', to: 'Alice' }  // example user node
+      // …your relationships here…
+    ];
 
-    async function loadScrolls() {
-      const container = document.getElementById('scrolls');
-      container.innerHTML = '<div class="loading">Echoing through the archives…</div>';
+    // 2) Build nodes+edges sets
+    const nodes = new vis.DataSet();
+    const edges = new vis.DataSet();
 
-      try {
-        const res  = await fetch('https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll');
-        const data = await res.json();
-        const scrolls = data.scroll || [];
-        container.innerHTML = '';
+    rawEdges.forEach(e => {
+      if (!nodes.get(e.from)) nodes.add({ id: e.from, label: e.from });
+      if (!nodes.get(e.to))   nodes.add({ id: e.to,   label: e.to   });
+      edges.add({ from: e.from, to: e.to });
+    });
 
-        if (!scrolls.length) {
-          container.innerHTML = '<div class="loading">No scrolls have echoed back yet.</div>';
-          return;
-        }
+    // 3) Create network
+    const container = document.getElementById('network');
+    const data = { nodes, edges };
+    const options = {
+      physics: { stabilization: false, barnesHut: { gravitationalConstant: -3000 } },
+      nodes: { shape: 'dot', size: 16, font: { color: '#fff3ff' } },
+      edges: { color: '#cfaaff', width: 2 },
+      interaction: { hover: true, tooltipDelay: 200 }
+    };
+    const network = new vis.Network(container, data, options);
 
-        scrolls.reverse().forEach(entry => {
-          const id    = entry.id;
-          const voted = localStorage.getItem(`voted-${id}`) === 'true';
+    // 4) Center & highlight the user node
+    const userNodeId = 'Just In Time';  // dynamically pick based on logged-in user
+    network.once('afterDrawing', () => {
+      network.selectNodes([userNodeId]);
+      network.focus(userNodeId, { scale:1.5, animation: { duration: 800 } });
+      nodes.update({ id: userNodeId, color: { background:'#ffde7d' }, font:{ color:'#1a0f1f' } });
+    });
 
-          const div = document.createElement('div');
-          div.className = 'scroll';
-          div.innerHTML = `
-            <div class="rating">★ ${entry.rating||0}</div>
-            <h3>${entry.title||'Untitled Scroll'}</h3>
-            <p>${entry.scroll}</p>
-            <div class="author">– ${entry.author||'Anonymous'}</div>
-            <div class="reactions">
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},1)">🥲 +1</button>
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},2)">❤️ +2</button>
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},3)">⭐ +3</button>
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},1)">👍 +1</button>
-              <button ${voted?'disabled':''} onclick="vote(${id},${entry.rating||0},-1)">👎 -1</button>
-            </div>
-          `;
-          div.addEventListener('click', () => {
-            document.getElementById('scrollContent').innerHTML = `
-              <div class="rating">★ ${entry.rating||0}</div>
-              <h2>${entry.title||'Untitled Scroll'}</h2>
-              <p>${entry.scroll}</p>
-              <div class="author">– ${entry.author||'Anonymous'}</div>
-            `;
-            document.getElementById('scrollModal').style.display = 'flex';
-          });
-          container.appendChild(div);
-        });
-
-      } catch (e) {
-        container.innerHTML = '<div class="loading">⚠️ The void refused to echo back.</div>';
-        console.error(e);
-      }
-    }
-
-    async function vote(id, current, delta) {
-      try {
-        const next = current + delta;
-        const res = await fetch(
-          `https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/scroll/${id}`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type':'application/json' },
-            body: JSON.stringify({ scroll:{ rating: next } })
-          }
-        );
-        if (res.ok) {
-          localStorage.setItem(`voted-${id}`, 'true');
-          loadScrolls();
-        } else {
-          alert('⚠️ The void rejected your blessing.');
-        }
-      } catch {
-        alert('⚠️ Connection to the void failed.');
-      }
-    }
-
-    document.getElementById('closeScroll').onclick = () => {
-      document.getElementById('scrollModal').style.display = 'none';
+    // 5) Search functionality
+    document.getElementById('searchBtn').onclick = () => {
+      const term = document.getElementById('searchInput').value.trim();
+      if (!nodes.get(term)) return alert('No node found for "'+term+'".');
+      network.selectNodes([term]);
+      network.focus(term, { scale:1.5, animation: true });
     };
 
-    loadScrolls();
+    // 6) Lock/unlock user node
+    let locked = false;
+    const btn = document.getElementById('toggleLock');
+    btn.onclick = () => {
+      locked = !locked;
+      network.setOptions({ physics: { enabled: !locked } });
+      btn.textContent = locked ? '🔒 Unlock My Node' : '🔓 Lock My Node';
+      const cls = locked ? 'locked' : '';
+      document.querySelector(`[data-id="${userNodeId}"]`).className = cls;
+    };
   </script>
 </body>
 </html>
