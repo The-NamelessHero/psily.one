@@ -1,2 +1,5 @@
-/tree   /tree/index.html   200
-/profile   /profile/index.html   200
+# let Netlify serve your index for root
+/           /index.html      200
+
+# (optional) enforce HTTPS on all routes
+http://*    https:///:splat  301!
