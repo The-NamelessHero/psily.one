@@ -2,164 +2,193 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Pps we love you too.</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Tree of Love – Psily.one</title>
+  <link rel="stylesheet" href="../style.css">
+  <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <style>
-    /* —— Global Reset & Scroll-Snap —— */
-    * { box-sizing: border-box; margin:0; padding:0; }
-    html, body {
-      height: 100%;
-      scroll-behavior: smooth;
-      scroll-snap-type: y mandatory;
-      overflow-y: scroll;
+    body {
+      margin: 0; padding: 1em;
+      background: #1a0f1f; color: #f8e1ff;
       font-family: Georgia, serif;
     }
-
-    /* —— Sticky Header —— */
-    header {
-      position: sticky;
-      top: 0;
-      width: 100%;
-      background: rgba(26,15,31,0.9);
-      z-index: 10;
-      padding: 1em;
-      text-align: center;
-      color: #f8e1ff;
+    header { text-align: center; margin-bottom: 1em; }
+    nav a, nav button {
+      margin: 0 1em; color: #b892ff;
+      text-decoration: none; background: none;
+      border: none; font: inherit; cursor: pointer;
     }
-    header nav a {
-      margin: 0 1em;
-      text-decoration: none;
-      color: #b892ff;
-      font-weight: bold;
+    .controls {
+      text-align: center; margin-bottom: 1em;
     }
-
-    /* —— Sections —— */
-    section {
-      scroll-snap-align: start;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2em;
-      text-align: center;
+    .controls input,
+    .controls select,
+    .controls button {
+      padding: .5em; margin: 0 .5em;
+      border-radius: 4px; border: 1px solid #774da9;
+      background: #1e1127; color: #fff3ff; font: inherit;
     }
-    #hero {
-      background: #1a0f1f;
-      color: #f8e1ff;
-    }
-    #features {
+    #network {
+      width: 100%; height: 75vh;
+      border: 2px solid #774da9; border-radius: 8px;
       background: #2d1b3a;
-      color: #f8e1ff;
-      flex-direction: column;
-      gap: 1.5em;
     }
-    #about {
-      background: #1e1127;
-      color: #f8e1ff;
-    }
-    #contact {
-      background: #ddd7ab;
-      color: #1a0f1f;
-      flex-direction: column;
-      gap: 1em;
-    }
-
-    /* —— Content Styling —— */
-    h1 { font-size: 3em; margin-bottom: 0.5em; }
-    h2 { font-size: 2em; margin-bottom: 0.5em; }
-    p  { font-size: 1.1em; max-width: 700px; margin: 0 auto 1em; line-height: 1.5; }
-
-    /* —— Social Buttons —— */
-    .social-buttons {
-      display: flex;
-      gap: 1em;
-      margin-top: 1em;
-    }
-    .social-buttons a {
-      text-decoration: none;
-      font-size: 1.5em;
-      padding: 0.5em;
-      border-radius: 6px;
-      background: #774da9;
-      color: white;
-      transition: background .2s;
-    }
-    .social-buttons a:hover {
-      background: #a077ff;
-    }
-
-    /* —— Call-to-Action Buttons —— */
-    .button {
-      display: inline-block;
-      margin-top: 1em;
-      padding: 0.8em 1.5em;
-      background: #774da9;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      transition: background .2s;
-    }
-    .button:hover {
-      background: #a077ff;
-    }
+    footer { text-align: center; margin-top: 1em; }
+    footer a { color: #b892ff; text-decoration: none; }
   </style>
 </head>
 <body>
 
   <header>
     <nav>
-      <a href="#hero">Home</a>
-      <a href="#features">Features</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
+      <a href="/">🌀 Home</a>
+      <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/library/">🏛️ Library</a>
+      <a href="/profile/">👤 Profile</a>
     </nav>
+    <h1 id="tree-title">🌳 Tree of Love</h1>
+    <p>Click nodes or type names below to add relationships.</p>
   </header>
 
-  <section id="hero">
-    <div>
-      <h1>📖 Welcome To Ps...</h1>
-      <p>A site where the echoes of the void are preserved, one scroll at a time.</p>
-      <a class="button" href="/scrolls/">✍️ Write a Scroll</a>
-    </div>
-  </section>
+  <div class="controls">
+    <input id="nameA" placeholder="Name A" />
+    <select id="relationType">
+      <option value="child">👶 Child link</option>
+      <option value="parent">👪 Parent link</option>
+      <option value="love">❤️ Love/friend link</option>
+    </select>
+    <input id="nameB" placeholder="Name B" />
+    <button onclick="addRelation()">Add Relation</button>
+  </div>
 
-  <section id="features">
-    <div>
-      <h2>🏛️ The Library</h2>
-      <p>Explore a living archive of stories, poems, and confessions, react with emojis to show your love.</p>
-      <a class="button" href="/library/">📖 Enter the Archive</a>
-    </div>
-    <div>
-      <h2>🌳 Tree of Love</h2>
-      <p>Build a web of connections, your node at the center, branching out to friends, family, kindred spirits.</p>
-      <a class="button" href="/tree/">🌿 Grow Your Tree</a>
-    </div>
-  </section>
+  <div id="network"></div>
 
-  <section id="about">
-    <div>
-      <h2>✨ About Psily.one</h2>
-      <p>Psily.one is a place to leave your mark in the digital void, and where you can build your Tree of Love. No login required to read, just bring your truth (or fables) when you write.</p>
-    </div>
-  </section>
+  <footer>
+    <a href="/">← Back to Psily.one</a>
+  </footer>
 
-  <section id="contact">
-    <div>
-      <h2>🔗 Connect with Us</h2>
-      <p>Follow our journey, share your thoughts, or just say hello on social media.</p>
-      <div class="social-buttons">
-        <a href="https://twitter.com/@A_NamelessHero" target="_blank">🐦 X</a>
-        <a href="https://instagram.com/thenamelesshero.ai" target="_blank">📸 IG</a> 
-        <a href="https://www.reddit.com/user/The_NamelessHero">Check--> 🤖 Reddit</a>
-        <a href="https://tiktok.com/thenamelesshero.ai">Check-->🕒 TikTok</a>
-        <a href="https://discord.gg/ph3te35dm3" target="_blank">🎮 Discord</a>  
-        
-        
+  <script>
+    // Dark mode toggle
+    function toggleDark() {
+      document.body.classList.toggle('light-mode');
+    }
 
-        
-      </div>
-    </div>
-  </section>
+    // Grab author from URL (for per-user saving)
+    const params = new URLSearchParams(location.search);
+    const currentUser = params.get('author') || 'guest';
+    document.getElementById('tree-title').textContent =
+      currentUser === 'guest'
+      ? '🌳 Tree of Love'
+      : `🌳 ${currentUser}’s Tree of Love`;
+    const storageKey = `tree-${currentUser}`;
+
+    // Create empty datasets
+    const nodes = new vis.DataSet([]);
+    const edges = new vis.DataSet([]);
+
+    // Network config: box nodes, physics enabled for auto-spread
+    const container = document.getElementById('network');
+    const data = { nodes, edges };
+    const options = {
+      nodes: {
+        shape: 'box',
+        margin: 10,
+        widthConstraint: { maximum: 200 }
+      },
+      interaction: {
+        dragNodes: true,
+        dragView: true,
+        zoomView: true
+      },
+      physics: {
+        enabled: true,
+        stabilization: { iterations: 200 }
+      }
+    };
+    const network = new vis.Network(container, data, options);
+
+    // Load saved tree if exists
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      const { savedNodes, savedEdges } = JSON.parse(saved);
+      nodes.add(savedNodes);
+      edges.add(savedEdges);
+    }
+
+    // Helper: find or create node by label
+    function getNodeId(label) {
+      const existing = nodes.get({ filter: n => n.label === label })[0];
+      if (existing) return existing.id;
+      const newId = nodes.length === 0
+        ? 1
+        : Math.max(...nodes.get().map(n => n.id)) + 1;
+      nodes.add({ id: newId, label });
+      return newId;
+    }
+
+    // Save current tree to localStorage
+    function saveTree() {
+      const savedNodes = nodes.get();
+      const savedEdges = edges.get();
+      localStorage.setItem(storageKey,
+        JSON.stringify({ savedNodes, savedEdges }));
+    }
+
+    // Add a new relation manually
+    function addRelation() {
+      const A = document.getElementById('nameA').value.trim();
+      const B = document.getElementById('nameB').value.trim();
+      const type = document.getElementById('relationType').value;
+      if (!A || !B) return alert('Fill both Name A and Name B');
+
+      const idA = getNodeId(A);
+      const idB = getNodeId(B);
+
+      let edgeConfig;
+      if (type === 'child') {
+        edgeConfig = {
+          from: idA, to: idB,
+          color: { color: 'grey' },
+          dashes: false, width: 2
+        };
+      } else if (type === 'parent') {
+        edgeConfig = {
+          from: idA, to: idB,
+          color: { color: 'grey' },
+          dashes: false, width: 2
+        };
+      } else { // love
+        edgeConfig = {
+          from: idA, to: idB,
+          color: { color: 'red' },
+          dashes: true, width: 2
+        };
+      }
+
+      edges.add(edgeConfig);
+      saveTree();
+
+      // Clear inputs
+      document.getElementById('nameA').value = '';
+      document.getElementById('nameB').value = '';
+    }
+
+    // Click-to-link: fill inputs and auto-add on second click
+    network.on('click', params => {
+      if (params.nodes.length === 1) {
+        const nodeId = params.nodes[0];
+        const label = nodes.get(nodeId).label;
+        const a = document.getElementById('nameA');
+        const b = document.getElementById('nameB');
+        if (!a.value) {
+          a.value = label;
+        } else if (!b.value) {
+          b.value = label;
+          addRelation();
+        }
+      }
+    });
+  </script>
 
 </body>
 </html>
