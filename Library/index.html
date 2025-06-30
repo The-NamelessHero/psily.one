@@ -71,41 +71,45 @@
     }
 
     /* ==== POPUP STYLES ==== */
-    #scrollModal {
-      display: none;
-      position: fixed; top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(6px);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    #overlay {
-      position: absolute; width: 100%; height: 100%;
-      background: transparent;
-    }
-    #scrollPopup {
-      position: relative;
-      top: 5%; left: 50%;
-      transform: translateX(-50%);
-      width: 80%; max-width: 700px; height: 90vh;
-      background: url('ancient-parchment.png') center/cover no-repeat;
-      padding: 2em;
-      border-radius: 16px;
-      overflow-y: auto;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      color: #1a0f1f; font-family: Georgia, serif;
-      display: flex; flex-direction: column;
-      animation: scrollIn .5s ease-out;
-    }
-    #closeScroll {
-      position: absolute; top: 10px; right: 20px;
-      font-size: 1.5em; cursor: pointer; color: #333;
-    }
-    #scrollContent {
-      flex: 1; overflow-y: auto; padding-right: 1em; margin-top: 2em;
-    }
+#scrollModal {
+  display: none;               /* shown via JS as inline style 'flex' */
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  justify-content: center;     /* center child horizontally */
+  align-items: center;         /* center child vertically */
+  z-index: 1000;
+}
+
+/* SCROLL POPUP – no absolute positioning, rely on parent flex */
+#scrollPopup {
+  width: 350px;                /* fixed width that matches parchment aspect */
+  max-width: 90%;              /* shrink on small screens */
+  max-height: 90vh;            /* never overflow viewport */
+  background: url('ancient-parchment.png') 
+              center center no-repeat;
+  background-size: contain;    /* scale whole image in box */
+  padding: 2.5em 1.5em;        /* leave room inside borders */
+  box-sizing: border-box;
+  overflow-y: auto;            /* scroll text inside parchment */
+  position: relative;
+}
+
+/* CLOSE BUTTON inside popup */
+#closeScroll {
+  position: absolute;
+  top: 8px; right: 8px;
+  font-size: 1.4em;
+  color: #333;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  width: 1.8em; height: 1.8em;
+  line-height: 1.8em;
+  text-align: center;
+  cursor: pointer;
+}
+
 
     @keyframes scrollIn {
       from { transform: translate(-50%, -30px) scaleY(.9); opacity: 0; }
