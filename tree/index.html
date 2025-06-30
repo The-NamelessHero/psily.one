@@ -58,7 +58,7 @@
       <a href="/profile/">👤 Profile</a>
     </nav>
     <h1>🌳 Tree of Love</h1>
-    <p>A block-style family tree with red “love” links.</p>
+    <p>Block-style nodes with red dashed “love” links.</p>
   </header>
 
   <div class="controls">
@@ -83,33 +83,35 @@
       document.body.classList.toggle('light-mode');
     }
 
-    // 1) Initial nodes & edges
+    // 1) Nodes with blank labels for manual fill-in
     const nodesDS = new vis.DataSet([
-      { id:1, label:'Ronald'    },
-      { id:2, label:'Catherine' },
-      { id:3, label:'Joshua'    },
-      { id:4, label:'Justin'    },
-      { id:5, label:'Jennifer'  },
-      { id:6, label:'Jacob'     },
-      { id:7, label:'Samantha'  },
-      { id:8, label:'Kristina'  }
-    ]);
-    const edgesDS = new vis.DataSet([
-      // parent→child
-      { from:1,to:3, arrows:'to', color:{color:'#cfaaff'}, smooth:{type:'straight'}, width:2 },
-      { from:1,to:4, arrows:'to', color:{color:'#cfaaff'}, smooth:{type:'straight'}, width:2 },
-      { from:1,to:5, arrows:'to', color:{color:'#cfaaff'}, smooth:{type:'straight'}, width:2 },
-      { from:1,to:6, arrows:'to', color:{color:'#cfaaff'}, smooth:{type:'straight'}, width:2 },
-      { from:2,to:3, arrows:'to', color:{color:'#cfaaff'}, smooth:{type:'straight'}, width:2 },
-      { from:2,to:4, arrows:'to', color:{color:'#cfaaff'}, smooth:{type:'straight'}, width:2 },
-      { from:2,to:5, arrows:'to', color:{color:'#cfaaff'}, smooth:{type:'straight'}, width:2 },
-      { from:2,to:6, arrows:'to', color:{color:'#cfaaff'}, smooth:{type:'straight'}, width:2 },
-      // love links
-      { from:4,to:7, dashes:true, color:{color:'red'}, width:3, arrows:'' },
-      { from:4,to:8, dashes:true, color:{color:'red'}, width:3, arrows:'' }
+      { id: 1, label: '' },
+      { id: 2, label: '' },
+      { id: 3, label: '' },
+      { id: 4, label: '' },
+      { id: 5, label: '' },
+      { id: 6, label: '' },
+      { id: 7, label: '' },
+      { id: 8, label: '' }
     ]);
 
-    // 2) Initialize network with global box shape
+    // 2) Edges: no arrows, just straight lines
+    const edgesDS = new vis.DataSet([
+      // family links (solid purple)
+      { from:1, to:3, color:{ color:'#cfaaff' }, dashes:false, width:2 },
+      { from:1, to:4, color:{ color:'#cfaaff' }, dashes:false, width:2 },
+      { from:1, to:5, color:{ color:'#cfaaff' }, dashes:false, width:2 },
+      { from:1, to:6, color:{ color:'#cfaaff' }, dashes:false, width:2 },
+      { from:2, to:3, color:{ color:'#cfaaff' }, dashes:false, width:2 },
+      { from:2, to:4, color:{ color:'#cfaaff' }, dashes:false, width:2 },
+      { from:2, to:5, color:{ color:'#cfaaff' }, dashes:false, width:2 },
+      { from:2, to:6, color:{ color:'#cfaaff' }, dashes:false, width:2 },
+      // love links (red dashed)
+      { from:4, to:7, color:{ color:'red' }, dashes:true, width:3 },
+      { from:4, to:8, color:{ color:'red' }, dashes:true, width:3 }
+    ]);
+
+    // 3) Initialize vis-network with box nodes
     const container = document.getElementById('network');
     const data = { nodes: nodesDS, edges: edgesDS };
     const options = {
@@ -136,7 +138,7 @@
     };
     const network = new vis.Network(container, data, options);
 
-    // 3) Dynamic addRelation()
+    // 4) Dynamic addRelation()
     function addRelation() {
       const name = document.getElementById('newName').value.trim();
       const target = document.getElementById('targetName').value.trim();
@@ -145,30 +147,27 @@
         return alert('Please fill in both names.');
       }
 
-      // Helper to find or create a node
       function getNodeId(label) {
         const existing = nodesDS.get().find(n => n.label === label);
         if (existing) return existing.id;
         const newId = Math.max(...nodesDS.get().map(n => n.id)) + 1;
-        nodesDS.add({ id: newId, label, shape: 'box' });
+        nodesDS.add({ id: newId, label: '' });
         return newId;
       }
 
       const sourceId = getNodeId(name);
       const targetId = getNodeId(target);
 
-      // Build edge config
-      let edge = { from: sourceId, to: targetId };
-      if (type === 'child') {
-        edge = { from: sourceId, to: targetId, arrows:'to', color:{color:'#cfaaff'}, dashes:false, width:2 };
-      } else if (type === 'parent') {
-        edge = { from: targetId, to: sourceId, arrows:'to', color:{color:'#cfaaff'}, dashes:false, width:2 };
-      } else if (type === 'love') {
-        edge = { from: sourceId, to: targetId, dashes:true, color:{color:'red'}, width:3, arrows:'' };
+      let edge;
+      if (type === 'parent') {
+        edge = { from: sourceId, to: targetId, color:{color:'#cfaaff'}, dashes:false, width:2 };
+      } else if (type === 'child') {
+        edge = { from: sourceId, to: targetId, color:{color:'#cfaaff'}, dashes:false, width:2 };
+      } else { // love
+        edge = { from: sourceId, to: targetId, color:{color:'red'}, dashes:true, width:3 };
       }
 
       edgesDS.add(edge);
-      // Clear inputs
       document.getElementById('newName').value = '';
       document.getElementById('targetName').value = '';
     }
