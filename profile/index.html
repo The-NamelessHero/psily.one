@@ -89,7 +89,6 @@
         '<div class="loading">Logged out. Refresh to log in again.</div>';
     });
 
-    // Kick off: if already logged in, go straight to form
     const currentUser = netlifyIdentity.currentUser();
     if (currentUser) {
       showProfileForm(currentUser.email);
