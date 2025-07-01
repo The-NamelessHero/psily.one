@@ -7,23 +7,23 @@
   <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet">
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <style>
-    body { margin:0; padding:1em; background:#1a0f1f; color:#f8e1ff; font-family:Georgia, serif }
-    header { text-align:center; margin-bottom:1em }
-    nav a { margin:0 1em; color:#b892ff; text-decoration:none }
-    .controls { text-align:center; margin-bottom:1em }
+    body { margin:0; padding:1em; background:#1a0f1f; color:#f8e1ff; font-family:Georgia, serif; }
+    header { text-align:center; margin-bottom:1em; }
+    nav a { margin:0 1em; color:#b892ff; text-decoration:none; }
+    .controls { text-align:center; margin-bottom:1em; }
     .controls input, .controls select, .controls button {
       padding:.5em 1em; margin:0 .3em;
       border-radius:4px; border:1px solid #774da9;
       background:#1e1127; color:#fff3ff; font:inherit; cursor:pointer;
     }
-    .controls button:disabled { opacity:.5; cursor:default }
+    .controls button:disabled { opacity:.5; cursor:default; }
     #network {
       width:100%; height:75vh;
       border:2px solid #774da9; border-radius:8px;
       background:#2d1b3a;
     }
-    footer { text-align:center; margin-top:1em }
-    footer a { color:#b892ff; text-decoration:none }
+    footer { text-align:center; margin-top:1em; }
+    footer a { color:#b892ff; text-decoration:none; }
   </style>
 </head>
 <body>
@@ -31,7 +31,7 @@
   <header>
     <nav>
       <a href="/">🌀 Home</a>
-      <a href="/scroll/">✍️ Write a Scroll</a>
+      <a href="/scrolls/">✍️ Write a Scroll</a>
       <a href="/library/">🏛️ Library</a>
       <a href="/profile/">👤 Profile</a>
     </nav>
@@ -59,31 +59,37 @@
 
   <script>
   (function(){
-    const OFFSET = 150;  
-    // — DataSets
+    // ──────────────────────────────
+    // 1) YOUR SHEETY ENDPOINT HERE:
+    const SHEETY_BASE = 'https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/tree';
+    // Make sure your Sheet has columns:
+    // id, parent, child, type, x, y, cx, cy
+    // ──────────────────────────────
+
+    // Datasets
     const nodes = new vis.DataSet();
     const edges = new vis.DataSet();
     let selectedNode = null;
 
-    // — Network
+    // Network
     const network = new vis.Network(
       document.getElementById('network'),
       { nodes, edges },
       {
         physics: {
-          enabled: true,
-          barnesHut: { gravitationalConstant:-2000, springLength:200, springConstant:0.04 },
-          stabilization: { iterations:200 }
+          enabled:true,
+          barnesHut:{ gravitationalConstant:-2000, springLength:200, springConstant:0.04 },
+          stabilization:{ iterations:200 }
         },
-        interaction: { dragNodes:true, dragView:true, zoomView:true },
-        nodes: {
+        interaction:{ dragNodes:true, dragView:true, zoomView:true },
+        nodes:{
           shape:'box',
           margin:{top:8,bottom:8,left:12,right:12},
           color:{background:'#774da9',border:'#b892ff'},
           font:{color:'#fff3ff',size:16}
         },
-        edges: {
-          arrows:{ to:{ enabled:false } },
+        edges:{
+          arrows:{ to:{ enabled:false }},
           color:{ color:'#cfaaff' },
           width:2,
           smooth:{ type:'straight' }
@@ -91,72 +97,86 @@
       }
     );
 
-    // — Persistence
-    const KEY = 'psily-tree';
-    (function load(){
-      const saved = localStorage.getItem(KEY);
-      if (!saved) return;
-      const { n, e } = JSON.parse(saved);
-      nodes.add(n); edges.add(e);
-    })();
-    function save(){
-      localStorage.setItem(KEY,
-        JSON.stringify({ n: nodes.get(), e: edges.get() })
-      );
-    }
-
-    // — Helpers
-    function createNode(label, refId, side){
-      // side: 'left' or 'right'
-      const id = nodes.length === 0
-        ? 1
-        : Math.max(...nodes.get().map(n=>n.id)) + 1;
-      let x=0,y=0;
-      if (refId) {
-        const pos = network.getPosition(refId);
-        x = pos.x + (side==='right'? OFFSET : -OFFSET);
-        y = pos.y;
-      }
-      nodes.add({ id, label, x, y, fixed:{x:true,y:true} });
+    // Helpers
+    function getNodeId(label){
+      const found = nodes.get({ filter: n => n.label === label })[0];
+      if (found) return found.id;
+      const id = nodes.length===0 ? 1 : Math.max(...nodes.get().map(n=>n.id)) + 1;
+      nodes.add({ id, label });
       return id;
     }
 
-    // — Add Relation
-    document.getElementById('addBtn').onclick = ()=>{
+    // Load entire sheet on startup
+    async function loadTree(){
+      const res = await fetch(SHEETY_BASE);
+      const list = (await res.json()).tree || [];
+      nodes.clear(); edges.clear();
+      list.forEach(r => {
+        const pid = 'p'+r.id, cid = 'c'+r.id;
+        nodes.add({
+          id:pid, label:r.parent,
+          x:r.x, y:r.y,
+          fixed:{x:!!r.x,y:!!r.y}
+        });
+        nodes.add({
+          id:cid, label:r.child,
+          x:r.cx, y:r.cy,
+          fixed:{x:!!r.cx,y:!!r.cy}
+        });
+        edges.add({
+          id: r.id,
+          from: pid,
+          to:   cid,
+          color: { color: r.type==='love' ? 'red' : '#cfaaff' },
+          dashes: r.type === 'love'
+        });
+      });
+    }
+    loadTree();
+
+    // Add Relation
+    document.getElementById('addBtn').onclick = async () => {
       const A = document.getElementById('nameA').value.trim();
       const B = document.getElementById('nameB').value.trim();
       const T = document.getElementById('relationType').value;
-      if (!A||!B) return alert('Both names required.');
+      if (!A || !B) return alert('Both names required.');
 
-      // find existing
-      let a = nodes.get({ filter: n=>n.label===A })[0];
-      let b = nodes.get({ filter: n=>n.label===B })[0];
-      // create new if missing
-      if (!a && !b) {
-        a = { id: createNode(A,null,'right') };
-        b = { id: createNode(B,a.id,'right') };
-      } else if (!a) {
-        a = { id: createNode(A,b.id,'left') };
-      } else if (!b) {
-        b = { id: createNode(B,a.id,'right') };
-      }
+      // get/create
+      const idA = getNodeId(A);
+      const idB = getNodeId(B);
 
-      // add edge
-      const edge = { from:a.id, to:b.id };
-      if (T==='love') {
-        edge.color = { color:'red' };
-        edge.dashes = true;
-      }
-      edges.add(edge);
+      // positions
+      const posA = network.getPosition(idA);
+      const posB = network.getPosition(idB);
 
-      document.getElementById('nameA').value='';
-      document.getElementById('nameB').value='';
-      save();
+      // POST new row
+      const payload = { tree: { parent:A, child:B, type:T, x:posA.x, y:posA.y, cx:posB.x, cy:posB.y } };
+      const res = await fetch(SHEETY_BASE, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const row = (await res.json()).tree;
+
+      // reflect
+      const pid = 'p'+row.id, cid = 'c'+row.id;
+      nodes.update({ id:pid, label:row.parent, x:row.x, y:row.y, fixed:{x:true,y:true} });
+      nodes.update({ id:cid, label:row.child,  x:row.cx, y:row.cy, fixed:{x:true,y:true} });
+      edges.add({
+        id: row.id,
+        from: pid,
+        to: cid,
+        color: { color: row.type==='love' ? 'red' : '#cfaaff' },
+        dashes: row.type==='love'
+      });
+
+      document.getElementById('nameA').value = '';
+      document.getElementById('nameB').value = '';
     };
 
-    // — Click-to-fill & auto-add
-    network.on('click', params=>{
-      if (params.nodes.length!==1) return;
+    // Click-to-fill & auto-add
+    network.on('click', params => {
+      if (params.nodes.length !== 1) return;
       const lbl = nodes.get(params.nodes[0]).label;
       const a = document.getElementById('nameA'),
             b = document.getElementById('nameB');
@@ -167,32 +187,41 @@
       }
     });
 
-    // — Select / Delete
+    // Delete Selected
     const del = document.getElementById('deleteBtn');
-    network.on('selectNode', ({ nodes:sel })=>{
+    network.on('selectNode', ({ nodes:sel }) => {
       selectedNode = sel[0];
       del.disabled = false;
     });
-    network.on('deselectNode', ()=>{
+    network.on('deselectNode', () => {
       selectedNode = null;
       del.disabled = true;
     });
-    del.onclick = ()=>{
+    del.onclick = async () => {
       if (!selectedNode) return;
+      const relId = parseInt(selectedNode.slice(1),10);
+      await fetch(`${SHEETY_BASE}/${relId}`, { method:'DELETE' });
       nodes.remove(selectedNode);
-      edges.get().filter(e=>e.from===selectedNode||e.to===selectedNode)
-                .forEach(e=>edges.remove(e.id));
+      edges.get().filter(e=>e.id===relId).forEach(e=>edges.remove(e.id));
+      selectedNode = null;
       del.disabled = true;
-      save();
     };
 
-    // — Drag-to-pin
-    network.on('dragEnd', ({ nodes:dragged })=>{
-      dragged.forEach(id=>{
-        const pos = network.getPosition(id);
-        nodes.update({ id, x:pos.x, y:pos.y, fixed:{x:true,y:true} });
-      });
-      save();
+    // Drag-to-pin + update
+    network.on('dragEnd', async ({ nodes:dragged }) => {
+      for (const nid of dragged) {
+        const relId = parseInt(nid.slice(1),10);
+        if (!relId) continue;
+        const pos = network.getPosition(nid);
+        const body = { tree:{} };
+        if (nid.startsWith('p')) { body.tree.x = pos.x; body.tree.y = pos.y; }
+        else                    { body.tree.cx = pos.x; body.tree.cy = pos.y; }
+        await fetch(`${SHEETY_BASE}/${relId}`, {
+          method:'PUT',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify(body)
+        });
+      }
     });
   })();
   </script>
