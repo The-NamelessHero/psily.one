@@ -49,8 +49,20 @@
     <input id="nameB" placeholder="Name B">
     <button id="addBtn">➕ Add Relation</button>
     <button id="deleteBtn" disabled>🗑️ Delete Selected</button>
+    <button id="saveBtn">💾 Save Tree</button>
+    <button id="printBtn">🖨️ Print Tree</button>
   </div>
-
+  
+  <script>
+  ;(function(){
+  // …your existing setup…
+  document.getElementById('addBtn').onclick = async () => {
+    const A = nameA.value.trim(), B = nameB.value.trim(), T = relationType.value;
+    if (!A||!B) return alert('Please fill both names.');
+    // POST to Sheety & update vis…
+    nameA.value = '';
+    nameB.value = '';
+    nameA.focus(); 
   <div id="network"></div>
 
   <footer>
@@ -139,9 +151,9 @@
 
     // 5) Add Relation
     document.getElementById('addBtn').onclick = async () => {
-      const A = document.getElementById('nameA').value.trim();
-      const B = document.getElementById('nameB').value.trim();
-      const T = document.getElementById('relationType').value;
+      const A = document.getElementById('nameA').value = '';
+      const B = document.getElementById('nameB').value = '';
+      const T = document.getElementById('nameA').focus();
       if (!A || !B) return alert('Please fill both names.');
 
       // POST to Sheety
@@ -204,6 +216,33 @@
     // 8) (Optional) Dragging just repositions locally,
     //     we do not save x/y so everyone sees the same layout.
   })();
+    document.getElementById('saveBtn').onclick = () => {
+  const data = {
+    nodes: nodes.get(),       // array of {id,label,x,y,…}
+    edges: edges.get()        // array of {id,from,to,…}
+  };
+  const blob = new Blob(
+    [JSON.stringify(data, null, 2)],
+    { type: 'application/json' }
+  );
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'tree.json';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+document.getElementById('saveBtn').onclick = () => {
+    const data = { nodes: nodes.get(), edges: edges.get() };
+    const blob = new Blob([ JSON.stringify(data, null, 2) ], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'tree.json'; a.click();
+    URL.revokeObjectURL(url);
+// Print the page (controls + graph)
+document.getElementById('printBtn').onclick = () => {
+  window.print();
+};
   </script>
 
 </body>
