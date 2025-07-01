@@ -75,12 +75,32 @@
     }
 
     // 3) Build the network
-    const network = new vis.Network(
-      document.getElementById('network'),
-      { nodes, edges },
-      {
-      const options = {
-        network.on('dragEnd', params => {
+const network = new vis.Network(
+  document.getElementById('network'),
+  { nodes, edges },
+  {
+    physics: { enabled: false },
+    interaction: {
+      dragNodes: true,
+      dragView:  true,
+      zoomView:  true
+    },
+    nodes: {
+      shape: 'box',
+      margin: { top:8, bottom:8, left:12, right:12 },
+      color: { background:'#774da9', border:'#b892ff' },
+      font: { color:'#fff3ff', size:16 }
+    },
+    edges: {
+      arrows: { to: { enabled: false } },
+      color: { color:'#cfaaff' },
+      width: 2,
+      smooth: { type:'straight' }
+    }
+  }
+);
+
+network.on('dragEnd', params => {
   params.nodes.forEach(id => {
     const pos = network.getPosition(id);
     nodes.update({
@@ -91,25 +111,6 @@
     });
   });
 });
-  physics: { enabled: false },
-  interaction: {
-    dragNodes: true,
-    dragView:  true,
-    zoomView:  true
-  },
-  nodes: {
-    shape: 'box',
-    margin: { top:8, bottom:8, left:12, right:12 },
-    color: { background:'#774da9', border:'#b892ff' },
-    font: { color:'#fff3ff', size:16 }
-  },
-  edges: {
-    arrows: { to: { enabled: false } },
-    color: { color:'#cfaaff' },
-    width: 2,
-    smooth: { type:'straight' }
-  }
-};
 
     // 4) Load all relations from Sheety
     async function loadTree() {
