@@ -62,26 +62,21 @@
     // 1) YOUR SHEETY URL
     const SHEETY_BASE = 'https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/tree';
 
-    // 2) DataSets & mapping
     const nodes = new vis.DataSet();
-    const edges = new vis.DataSet();
-    const labelToId = {};
-    let nextId = 1;
+  const edges = new vis.DataSet();
+  const labelToId = {};
+  let nextId = 1;
+  function getNodeId(label) {
+    if (labelToId[label]) return labelToId[label];
+    labelToId[label] = nextId++;
+    return labelToId[label];
+  }
 
-    function getNodeId(label) {
-      if (labelToId[label]) return labelToId[label];
-      labelToId[label] = nextId++;
-      return labelToId[label];
-    }
-
-    // 3) Build the network
-const network = new vis.Network(
-  document.getElementById('network'),
-  { nodes, edges },
-  {
-    physics: { enabled: false },
+  // 1) Define options properly
+  const options = {
+    physics: { enabled: false },      // no auto‐layout
     interaction: {
-      dragNodes: true,
+      dragNodes: true,                // allow node dragging
       dragView:  true,
       zoomView:  true
     },
@@ -97,41 +92,50 @@ const network = new vis.Network(
       width: 2,
       smooth: { type:'straight' }
     }
-  }
-);
+  };
 
-network.on('dragEnd', params => {
-  params.nodes.forEach(id => {
-    const pos = network.getPosition(id);
-    nodes.update({
-      id,
-      x: pos.x,
-      y: pos.y,
-      fixed: { x: true, y: true }
+  // 2) Build the network with the clean options
+  const network = new vis.Network(
+    document.getElementById('network'),
+    { nodes, edges },
+    options
+  );
+
+  // 3) Persist the user‐dragged position _without_ locking it
+  network.on('dragEnd', params => {
+    params.nodes.forEach(id => {
+      const pos = network.getPosition(id);
+      nodes.update({
+        id: id,
+        x: pos.x,
+        y: pos.y
+        // fixed: { x: true, y: true }  <-- scrap this
+      });
     });
   });
-});
 
-    // 4) Load all relations from Sheety
-    async function loadTree() {
-      const res = await fetch(SHEETY_BASE);
-      const list = (await res.json()).tree || [];
-      nodes.clear(); edges.clear(); Object.keys(labelToId).forEach(k=>delete labelToId[k]); nextId=1;
-      list.forEach(r => {
-        const pid = getNodeId(r.parent);
-        const cid = getNodeId(r.child);
-        nodes.add({ id:pid, label:r.parent });
-        nodes.add({ id:cid, label:r.child });
-        edges.add({
-          id: r.id,
-          from: pid,
-          to: cid,
-          color: { color: r.type==='love' ? 'red' : '#cfaaff' },
-          dashes: r.type==='love'
-        });
+  // 4) Load & render your tree, add/delete logic stays the same…
+  async function loadTree() {
+    const res = await fetch(SHEETY_BASE);
+    const list = (await res.json()).tree || [];
+    nodes.clear(); edges.clear();
+    Object.keys(labelToId).forEach(k=>delete labelToId[k]);
+    nextId = 1;
+    list.forEach(r => {
+      const pid = getNodeId(r.parent);
+      const cid = getNodeId(r.child);
+      nodes.add({ id: pid, label: r.parent });
+      nodes.add({ id: cid, label: r.child });
+      edges.add({
+        id: r.id,
+        from: pid,
+        to: cid,
+        color: { color: r.type==='love' ? 'red' : '#cfaaff' },
+        dashes: r.type==='love'
       });
-    }
-    loadTree();
+    });
+  }
+  loadTree();
 
     // 5) Add Relation
     document.getElementById('addBtn').onclick = async () => {
