@@ -31,7 +31,7 @@
   <header>
     <nav>
       <a href="/">🌀 Home</a>
-      <a href="/scrolls/">✍️ Write a Scroll</a>
+      <a href="/scroll/">✍️ Write a Scroll</a>
       <a href="/library/">🏛️ Library</a>
       <a href="/profile/">👤 Profile</a>
     </nav>
@@ -75,7 +75,22 @@
     }
 
     // 3) Build the network
-    const options = {
+    const network = new vis.Network(
+      document.getElementById('network'),
+      { nodes, edges },
+      {
+      const options = {
+        network.on('dragEnd', params => {
+  params.nodes.forEach(id => {
+    const pos = network.getPosition(id);
+    nodes.update({
+      id,
+      x: pos.x,
+      y: pos.y,
+      fixed: { x: true, y: true }
+    });
+  });
+});
   physics: { enabled: false },
   interaction: {
     dragNodes: true,
