@@ -8,6 +8,8 @@
   <!-- Netlify Identity -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script>
+    // Initialize Netlify Identity widget
+    netlifyIdentity.init();
     const SHEETY_BASE = 'https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/profiles';
   </script>
 
@@ -68,7 +70,6 @@
       <section id="treeSection">
         <h2>Your Tree of Love</h2>
         <div id="treeContainer">
-          <!-- you can embed via iframe or load vis.js here -->
           <iframe src="/tree/" style="width:100%; height:100%; border:none;"></iframe>
         </div>
       </section>
@@ -96,11 +97,11 @@
   </footer>
 
   <script>
-    // Initialize Netlify Identity
-    const identity = netlifyIdentity.init();
+    // Use global netlifyIdentity after init
+    const identity = window.netlifyIdentity;
     const loginBtn = document.getElementById('loginBtn');
     const loginSec = document.getElementById('loginSection');
-    const content = document.getElementById('profileContent');
+    const content  = document.getElementById('profileContent');
 
     loginBtn.onclick = () => identity.open();
 
@@ -116,11 +117,11 @@
     async function loadProfile(user) {
       const res = await fetch(`${SHEETY_BASE}/profiles`);
       const all = (await res.json()).profiles;
-      const me = all.find(p => p.email === user.email);
+      const me  = all.find(p => p.email === user.email);
       if (me) {
         profileId = me.id;
-        document.getElementById('alias').value = me.alias;
-        document.getElementById('about').value = me.about;
+        document.getElementById('alias').value     = me.alias;
+        document.getElementById('about').value     = me.about;
         document.getElementById('avatarUrl').value = me.avatarUrl;
         showAvatar(me.avatarUrl);
       }
@@ -137,60 +138,50 @@
     document.getElementById('profileForm').onsubmit = async e => {
       e.preventDefault();
       const body = { profile: {
-        email: identity.currentUser()?.email,
-        alias: document.getElementById('alias').value.trim(),
-        about: document.getElementById('about').value.trim(),
+        email:     identity.currentUser().email,
+        alias:     document.getElementById('alias').value.trim(),
+        about:     document.getElementById('about').value.trim(),
         avatarUrl: document.getElementById('avatarUrl').value.trim()
       }};
-      const url = profileId
+      const url    = profileId
         ? `${SHEETY_BASE}/profiles/${profileId}`
         : `${SHEETY_BASE}/profiles`;
       const method = profileId ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      if (res.ok) alert('Profile saved!');
-      else alert('Failed to save profile.');
+      const res    = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (res.ok) alert('Profile saved!'); else alert('Failed to save profile.');
     };
 
     // Load My Scrolls
     async function loadMyScrolls() {
       const alias = document.getElementById('alias').value.trim();
-      const res = await fetch(`${SHEETY_BASE}/scroll`);
-      const all = (await res.json()).scroll;
-      const mine = all.filter(s => (s.author||'').toLowerCase() === alias.toLowerCase());
-      const container = document.getElementById('myScrolls');
-      if (!mine.length) container.innerHTML = '<p style="color:#bbb">No scrolls yet.</p>';
-      else {
-        container.innerHTML = '';
-        mine.reverse().forEach(s => {
-          const d = document.createElement('div');
-          d.className = 'scroll';
-          d.innerHTML = `<p>${s.scroll}</p><div class="author">– ${s.author}</div>`;
-          container.appendChild(d);
-        });
-      }
+      const res   = await fetch(`${SHEETY_BASE}/scroll`);
+      const all   = (await res.json()).scroll;
+      const mine  = all.filter(s => (s.author||'').toLowerCase() === alias.toLowerCase());
+      const c     = document.getElementById('myScrolls');
+      c.innerHTML = '';
+      if (!mine.length) c.innerHTML = '<p style="color:#bbb">No scrolls yet.</p>';
+      else mine.reverse().forEach(s => {
+        const d = document.createElement('div'); d.className = 'scroll';
+        d.innerHTML = `<p>${s.scroll}</p><div class="author">– ${s.author}</div>`;
+        c.appendChild(d);
+      });
     }
 
     // Search Others
     document.getElementById('searchBtn').onclick = async () => {
-      const a = document.getElementById('searchInput').value.trim();
+      const a   = document.getElementById('searchInput').value.trim();
       if (!a) return alert('Enter an alias');
       const res = await fetch(`${SHEETY_BASE}/scroll`);
       const all = (await res.json()).scroll;
-      const theirs = all.filter(s => (s.author||'').toLowerCase() === a.toLowerCase());
-      const c = document.getElementById('otherScrolls');
-      c.innerHTML = `<h3>Scrolls by ${a}</h3>`;
-      if (!theirs.length) c.innerHTML += '<p style="color:#bbb">None found.</p>';
-      else theirs.reverse().forEach(s => {
-        const d = document.createElement('div');
-        d.className = 'scroll';
+      const th  = all.filter(s => (s.author||'').toLowerCase() === a.toLowerCase());
+      const oc  = document.getElementById('otherScrolls');
+      oc.innerHTML = `<h3>Scrolls by ${a}</h3>`;
+      if (!th.length) oc.innerHTML += '<p style="color:#bbb">None found.</p>';
+      else th.reverse().forEach(s => {
+        const d = document.createElement('div'); d.className = 'scroll';
         d.innerHTML = `<p>${s.scroll}</p><div class="author">– ${s.author}</div>`;
-        c.appendChild(d);
+        oc.appendChild(d);
       });
-    };
-  </script>
-</body>
-</html>
-
     };
   </script>
 </body>
