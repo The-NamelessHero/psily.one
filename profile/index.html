@@ -7,7 +7,6 @@
 
   <!-- Netlify Identity -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-  <!-- Sheety endpoint base (replace YOUR_TOKEN) -->
   <script>
     const SHEETY_BASE = 'https://api.sheety.co/YOUR_TOKEN/psily';
   </script>
@@ -16,32 +15,19 @@
     body { font-family:Georgia, serif; background:#1a0f1f; color:#f8e1ff; margin:0; padding:1em; }
     header { text-align:center; margin-bottom:1em; }
     nav a { margin:0 1em; color:#b892ff; text-decoration:none; }
-    button {  
-      padding:0.5em 1em; margin: 0.5em 0; 
-      background:#774da9; color:white; border:none; border-radius:6px; cursor:pointer;
-    }
     .hidden { display:none; }
-    .container { max-width:700px; margin:0 auto; }
-    label { display:block; margin: 1em 0 0.5em; }
-    input[type="text"], textarea {
-      width:100%; padding:0.5em; border-radius:6px; border:1px solid #774da9;
-      background:#1e1127; color:#fff3ff;
-    }
-    textarea { resize:vertical; min-height:80px; }
-    .avatar-preview {
-      margin-top:0.5em; width:96px; height:96px; border-radius:50%;
-      object-fit:cover; border:2px solid #b892ff;
-    }
-    section { margin-top:2em; }
-    h2 { margin-top:2em; font-size:1.5em; border-bottom:1px solid #774da9; padding-bottom:0.3em; }
-    .scroll { background:#2d1b3a; border:2px solid #774da9; border-radius:8px; padding:1em; margin-bottom:1em; }
-    .scroll .author { font-size:0.9em; color:#cfaaff; }
-    .search { margin-top:1em; }
-    .search input { width:60%; }
+    .container { max-width:800px; margin:0 auto; }
+    button { padding:0.5em 1em; margin: 0.5em 0; background:#774da9; color:white; border:none; border-radius:6px; cursor:pointer; }
+    label { display:block; margin:1em 0 0.5em; }
+    input[type="text"], textarea { width:100%; padding:0.5em; border-radius:6px; border:1px solid #774da9; background:#1e1127; color:#fff3ff; }
+    textarea { resize:vertical; min-height:100px; }
+    .avatar-preview { margin-top:0.5em; width:96px; height:96px; border-radius:50%; object-fit:cover; border:2px solid #b892ff; }
+    section { margin-top:2em; padding-bottom:2em; border-bottom:1px solid #442255; }
+    h2 { font-size:1.5em; margin-bottom:0.5em; }
+    #treeContainer { width:100%; height:400px; border:2px solid #774da9; border-radius:8px; background:#2d1b3a; }
   </style>
 </head>
 <body>
-
   <header>
     <nav>
       <a href="/">🌀 Home</a>
@@ -53,43 +39,55 @@
   </header>
 
   <div class="container">
-    <!-- Login/Signup -->
+    <!-- Login / Signup -->
     <div id="loginSection">
       <button id="loginBtn">🔑 Log In / Sign Up</button>
     </div>
 
-    <!-- Profile Editor -->
-    <div id="profileSection" class="hidden">
-      <h2>Edit Your Profile</h2>
-      <form id="profileForm">
-        <label for="alias">Alias</label>
-        <input type="text" id="alias" required />
+    <!-- Profile Content -->
+    <div id="profileContent" class="hidden">
+      <!-- Profile Info -->
+      <section id="profileSection">
+        <h2>Edit Your Profile</h2>
+        <form id="profileForm">
+          <label for="alias">Alias</label>
+          <input type="text" id="alias" required />
 
-        <label for="about">About Me</label>
-        <textarea id="about" placeholder="Tell us about yourself..."></textarea>
+          <label for="about">About Me / My Story</label>
+          <textarea id="about" placeholder="Tell us about yourself..."></textarea>
 
-        <label for="avatarUrl">Avatar URL</label>
-        <input type="text" id="avatarUrl" placeholder="https://example.com/me.jpg" />
-        <img id="avatarPreview" class="avatar-preview hidden" />
+          <label for="avatarUrl">Avatar Image URL</label>
+          <input type="text" id="avatarUrl" placeholder="https://example.com/me.jpg" />
+          <img id="avatarPreview" class="avatar-preview hidden" alt="Avatar Preview" />
 
-        <button type="submit">💾 Save Profile</button>
-      </form>
-    </div>
+          <button type="submit">💾 Save Profile</button>
+        </form>
+      </section>
 
-    <!-- Personal Scroll Archive -->
-    <div id="myScrollsSection" class="hidden">
-      <h2>Your Scrolls</h2>
-      <div id="myScrolls"><p style="color:#bbb">Loading…</p></div>
-    </div>
+      <!-- Tree of Love Embed -->
+      <section id="treeSection">
+        <h2>Your Tree of Love</h2>
+        <div id="treeContainer">
+          <!-- you can embed via iframe or load vis.js here -->
+          <iframe src="/tree/" style="width:100%; height:100%; border:none;"></iframe>
+        </div>
+      </section>
 
-    <!-- Search Others -->
-    <div id="searchSection" class="hidden">
-      <h2>Search Other Users</h2>
-      <div class="search">
-        <input id="searchInput" placeholder="Enter alias…" />
-        <button id="searchBtn">🔍 Search</button>
-      </div>
-      <div id="otherScrolls"></div>
+      <!-- My Scrolls -->
+      <section id="myScrollsSection">
+        <h2>My Scrolls</h2>
+        <div id="myScrolls"><p style="color:#bbb">Loading…</p></div>
+      </section>
+
+      <!-- Search Others -->
+      <section id="searchSection">
+        <h2>Search Other Users</h2>
+        <div class="search">
+          <input id="searchInput" placeholder="Enter alias…" />
+          <button id="searchBtn">🔍 Search</button>
+        </div>
+        <div id="otherScrolls"></div>
+      </section>
     </div>
   </div>
 
@@ -98,35 +96,31 @@
   </footer>
 
   <script>
-    // 1) Initialize Netlify Identity
+    // Initialize Netlify Identity
     const identity = netlifyIdentity.init();
-    const loginBtn  = document.getElementById('loginBtn');
-    const loginSec  = document.getElementById('loginSection');
-    const profileSec= document.getElementById('profileSection');
-    const mySec     = document.getElementById('myScrollsSection');
-    const searchSec = document.getElementById('searchSection');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginSec = document.getElementById('loginSection');
+    const content = document.getElementById('profileContent');
 
     loginBtn.onclick = () => identity.open();
 
     identity.on('login', user => {
       loginSec.classList.add('hidden');
-      profileSec.classList.remove('hidden');
-      mySec.classList.remove('hidden');
-      searchSec.classList.remove('hidden');
+      content.classList.remove('hidden');
       loadProfile(user);
-      loadMyScrolls(user);
+      loadMyScrolls();
     });
 
-    // 2) Profile CRUD via Sheety
+    // Profile CRUD via Sheety
     let profileId = null;
     async function loadProfile(user) {
       const res = await fetch(`${SHEETY_BASE}/profiles`);
-      const all  = (await res.json()).profiles;
-      const me   = all.find(p => p.email === user.email);
+      const all = (await res.json()).profiles;
+      const me = all.find(p => p.email === user.email);
       if (me) {
         profileId = me.id;
-        document.getElementById('alias').value     = me.alias;
-        document.getElementById('about').value     = me.about;
+        document.getElementById('alias').value = me.alias;
+        document.getElementById('about').value = me.about;
         document.getElementById('avatarUrl').value = me.avatarUrl;
         showAvatar(me.avatarUrl);
       }
@@ -134,46 +128,35 @@
 
     function showAvatar(url) {
       const img = document.getElementById('avatarPreview');
-      if (url) {
-        img.src = url;
-        img.classList.remove('hidden');
-      } else img.classList.add('hidden');
+      if (url) { img.src = url; img.classList.remove('hidden'); }
+      else img.classList.add('hidden');
     }
 
     document.getElementById('avatarUrl').oninput = e => showAvatar(e.target.value);
 
     document.getElementById('profileForm').onsubmit = async e => {
       e.preventDefault();
-      const body = {
-        profile: {
-          email:      identity.currentUser()?.email,
-          alias:      document.getElementById('alias').value.trim(),
-          about:      document.getElementById('about').value.trim(),
-          avatarUrl:  document.getElementById('avatarUrl').value.trim()
-        }
-      };
+      const body = { profile: {
+        email: identity.currentUser()?.email,
+        alias: document.getElementById('alias').value.trim(),
+        about: document.getElementById('about').value.trim(),
+        avatarUrl: document.getElementById('avatarUrl').value.trim()
+      }};
       const url = profileId
         ? `${SHEETY_BASE}/profiles/${profileId}`
         : `${SHEETY_BASE}/profiles`;
       const method = profileId ? 'PUT' : 'POST';
-      const res = await fetch(url, {
-        method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        profileId = data.profile.id;
-        alert('Profile saved!');
-      } else {
-        alert('Failed to save profile.');
-      }
+      const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (res.ok) alert('Profile saved!');
+      else alert('Failed to save profile.');
     };
 
-    // 3) Load “My Scrolls”
-    async function loadMyScrolls(user) {
+    // Load My Scrolls
+    async function loadMyScrolls() {
       const alias = document.getElementById('alias').value.trim();
-      const res   = await fetch(`${SHEETY_BASE}/scroll`);
-      const all   = (await res.json()).scroll;
-      const mine  = all.filter(s => (s.author||'').toLowerCase() === alias.toLowerCase());
+      const res = await fetch(`${SHEETY_BASE}/scroll`);
+      const all = (await res.json()).scroll;
+      const mine = all.filter(s => (s.author||'').toLowerCase() === alias.toLowerCase());
       const container = document.getElementById('myScrolls');
       if (!mine.length) container.innerHTML = '<p style="color:#bbb">No scrolls yet.</p>';
       else {
@@ -187,7 +170,7 @@
       }
     }
 
-    // 4) Search others
+    // Search Others
     document.getElementById('searchBtn').onclick = async () => {
       const a = document.getElementById('searchInput').value.trim();
       if (!a) return alert('Enter an alias');
@@ -203,6 +186,11 @@
         d.innerHTML = `<p>${s.scroll}</p><div class="author">– ${s.author}</div>`;
         c.appendChild(d);
       });
+    };
+  </script>
+</body>
+</html>
+
     };
   </script>
 </body>
