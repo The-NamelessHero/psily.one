@@ -10,7 +10,7 @@
     body { margin:0; padding:1em; background:#1a0f1f; color:#f8e1ff; font-family:Georgia, serif; }
     header { text-align:center; margin-bottom:1em; }
     nav a { margin:0 1em; color:#b892ff; text-decoration:none; }
-    .controls { text-align:center; margin-bottom:1em; }
+    .controls { text-align:center; margin-bottom:1em; position: relative; z-index: 10; }
     .controls input, .controls select, .controls button {
       padding:.5em 1em; margin:0 .3em;
       border-radius:4px; border:1px solid #774da9;
@@ -52,17 +52,7 @@
     <button id="saveBtn">💾 Save Tree</button>
     <button id="printBtn">🖨️ Print Tree</button>
   </div>
-  
-  <script>
-  ;(function(){
-  // …your existing setup…
-  document.getElementById('addBtn').onclick = async () => {
-    const A = nameA.value.trim(), B = nameB.value.trim(), T = relationType.value;
-    if (!A||!B) return alert('Please fill both names.');
-    // POST to Sheety & update vis…
-    nameA.value = '';
-    nameB.value = '';
-    nameA.focus(); 
+
   <div id="network"></div>
 
   <footer>
@@ -71,105 +61,96 @@
 
   <script>
   (function(){
-    // 1) YOUR SHEETY URL
     const SHEETY_BASE = 'https://api.sheety.co/ac6a020fab729985f64a3f30b8b8763f/psily/tree';
 
     const nodes = new vis.DataSet();
-  const edges = new vis.DataSet();
-  const labelToId = {};
-  let nextId = 1;
-  function getNodeId(label) {
-    if (labelToId[label]) return labelToId[label];
-    labelToId[label] = nextId++;
-    return labelToId[label];
-  }
+    const edges = new vis.DataSet();
+    const labelToId = {};
+    let nextId = 1;
 
-  // 1) Define options properly
-  const options = {
-    physics: { enabled: false },      // no auto‐layout
-    interaction: {
-      dragNodes: true,                // allow node dragging
-      dragView:  true,
-      zoomView:  true
-    },
-    nodes: {
-      shape: 'box',
-      margin: { top:8, bottom:8, left:12, right:12 },
-      color: { background:'#774da9', border:'#b892ff' },
-      font: { color:'#fff3ff', size:16 }
-    },
-    edges: {
-      arrows: { to: { enabled: false } },
-      color: { color:'#cfaaff' },
-      width: 2,
-      smooth: { type:'straight' }
+    function getNodeId(label) {
+      if (labelToId[label]) return labelToId[label];
+      labelToId[label] = nextId++;
+      return labelToId[label];
     }
-  };
 
-  // 2) Build the network with the clean options
-  const network = new vis.Network(
-    document.getElementById('network'),
-    { nodes, edges },
-    options
-  );
+    // Network options
+    const options = {
+      physics: { enabled: false },
+      interaction: {
+        dragNodes: true,
+        dragView: true,
+        zoomView: true
+      },
+      nodes: {
+        shape: 'box',
+        margin: { top:8, bottom:8, left:12, right:12 },
+        color: { background:'#774da9', border:'#b892ff' },
+        font: { color:'#fff3ff', size:16 }
+      },
+      edges: {
+        arrows: { to: { enabled: false } },
+        color: { color:'#cfaaff' },
+        width: 2,
+        smooth: { type:'straight' }
+      }
+    };
 
-  // 3) Persist the user‐dragged position _without_ locking it
-  network.on('dragEnd', params => {
-    params.nodes.forEach(id => {
-      const pos = network.getPosition(id);
-      nodes.update({
-        id: id,
-        x: pos.x,
-        y: pos.y
-        // fixed: { x: true, y: true }  <-- scrap this
+    // Build the network
+    const network = new vis.Network(
+      document.getElementById('network'),
+      { nodes, edges },
+      options
+    );
+
+    // Save user drag positions (no fixed lock)
+    network.on('dragEnd', params => {
+      params.nodes.forEach(id => {
+        const pos = network.getPosition(id);
+        nodes.update({ id: id, x: pos.x, y: pos.y });
       });
     });
-  });
 
-  // 4) Load & render your tree, add/delete logic stays the same…
-  async function loadTree() {
-    const res = await fetch(SHEETY_BASE);
-    const list = (await res.json()).tree || [];
-    nodes.clear(); edges.clear();
-    Object.keys(labelToId).forEach(k=>delete labelToId[k]);
-    nextId = 1;
-    list.forEach(r => {
-      const pid = getNodeId(r.parent);
-      const cid = getNodeId(r.child);
-      nodes.add({ id: pid, label: r.parent });
-      nodes.add({ id: cid, label: r.child });
-      edges.add({
-        id: r.id,
-        from: pid,
-        to: cid,
-        color: { color: r.type==='love' ? 'red' : '#cfaaff' },
-        dashes: r.type==='love'
+    // Load initial tree
+    async function loadTree() {
+      const res = await fetch(SHEETY_BASE);
+      const list = (await res.json()).tree || [];
+      nodes.clear(); edges.clear();
+      Object.keys(labelToId).forEach(k=>delete labelToId[k]); nextId = 1;
+      list.forEach(r => {
+        const pid = getNodeId(r.parent);
+        const cid = getNodeId(r.child);
+        nodes.add({ id: pid, label: r.parent });
+        nodes.add({ id: cid, label: r.child });
+        edges.add({
+          id: r.id,
+          from: pid,
+          to: cid,
+          color: { color: r.type==='love' ? 'red' : '#cfaaff' },
+          dashes: r.type==='love'
+        });
       });
-    });
-  }
-  loadTree();
+    }
+    loadTree();
 
-    // 5) Add Relation
+    // Add relation
     document.getElementById('addBtn').onclick = async () => {
-      const A = document.getElementById('nameA').value = '';
-      const B = document.getElementById('nameB').value = '';
-      const T = document.getElementById('nameA').focus();
+      const A = document.getElementById('nameA').value.trim();
+      const B = document.getElementById('nameB').value.trim();
+      const T = document.getElementById('relationType').value;
       if (!A || !B) return alert('Please fill both names.');
 
-      // POST to Sheety
       const payload = { tree:{ parent:A, child:B, type:T } };
       const res = await fetch(SHEETY_BASE, {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
+        method:'POST', headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify(payload)
       });
       const row = (await res.json()).tree;
 
-      // update in vis
       const pid = getNodeId(row.parent);
       const cid = getNodeId(row.child);
-      nodes.update({ id:pid, label:row.parent });
-      nodes.update({ id:cid, label:row.child });
+      nodes.update({ id: pid, label: row.parent });
+      nodes.update({ id: cid, label: row.child });
       edges.add({
         id: row.id,
         from: pid,
@@ -178,16 +159,18 @@
         dashes: row.type==='love'
       });
 
-      document.getElementById('nameA').value='';
-      document.getElementById('nameB').value='';
+      // Clear & focus
+      document.getElementById('nameA').value = '';
+      document.getElementById('nameB').value = '';
+      document.getElementById('nameA').focus();
     };
 
-    // 6) Click-to-fill & auto-add
+    // Click-to-fill & auto-add
     network.on('click', params => {
       if (params.nodes.length !== 1) return;
       const lbl = nodes.get(params.nodes[0]).label;
-      const a = document.getElementById('nameA'),
-            b = document.getElementById('nameB');
+      const a = document.getElementById('nameA');
+      const b = document.getElementById('nameB');
       if (!a.value) a.value = lbl;
       else if (!b.value) {
         b.value = lbl;
@@ -195,7 +178,7 @@
       }
     });
 
-    // 7) Select/Delete Relation (edge)
+    // Select/Delete edge
     let selectedEdge = null;
     network.on('selectEdge', ({ edges: sel }) => {
       selectedEdge = sel[0];
@@ -213,37 +196,19 @@
       document.getElementById('deleteBtn').disabled = true;
     };
 
-    // 8) (Optional) Dragging just repositions locally,
-    //     we do not save x/y so everyone sees the same layout.
-  })();
+    // Save tree as JSON file
     document.getElementById('saveBtn').onclick = () => {
-  const data = {
-    nodes: nodes.get(),       // array of {id,label,x,y,…}
-    edges: edges.get()        // array of {id,from,to,…}
-  };
-  const blob = new Blob(
-    [JSON.stringify(data, null, 2)],
-    { type: 'application/json' }
-  );
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'tree.json';
-  a.click();
-  URL.revokeObjectURL(url);
-};
-document.getElementById('saveBtn').onclick = () => {
-    const data = { nodes: nodes.get(), edges: edges.get() };
-    const blob = new Blob([ JSON.stringify(data, null, 2) ], { type:'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'tree.json'; a.click();
-    URL.revokeObjectURL(url);
-// Print the page (controls + graph)
-document.getElementById('printBtn').onclick = () => {
-  window.print();
-};
-  </script>
+      const data = { nodes: nodes.get(), edges: edges.get() };
+      const blob = new Blob([ JSON.stringify(data, null, 2) ], { type:'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url;
+      a.download = 'tree.json'; a.click();
+      URL.revokeObjectURL(url);
+    };
 
+    // Print page
+    document.getElementById('printBtn').onclick = () => window.print();
+  })();
+  </script>
 </body>
 </html>
